@@ -2,8 +2,12 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
+import java.util.Random;
 
 public class Client {
+    private static final Random random = new Random();
+    // A unique client name for using in the server
+    private static String clientName;
     public static void main(String[] args) {
 //        String serverIPAddress = args[0];
 //        int serverPort = Integer.parseInt(args[1]);
@@ -13,8 +17,12 @@ public class Client {
             ServerInterface client = (ServerInterface) Naming.lookup("rmi://localhost/ServerRemoteObj");
             String response = client.sayHello();
             System.out.println("Response from the remote object: " + response);
-            response = client.join("client 1");
-            System.out.println("Response from the remote object: " + response);
+            clientName = client.join();
+            if (clientName == null){
+                System.out.println("The manager refused your join request.");
+                return;
+            }
+            System.out.println("Joined the server! Your name: " + clientName);
         } catch (RemoteException e){
             e.printStackTrace();
         } catch (MalformedURLException e){
@@ -23,4 +31,6 @@ public class Client {
             System.err.println("Remote object name is not currently bound: " + e.getMessage());
         }
     }
+
+
 }
