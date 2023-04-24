@@ -3,6 +3,7 @@ import java.rmi.RemoteException;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.util.Random;
+import javax.swing.SwingUtilities;
 
 public class Client {
     private static final Random random = new Random();
@@ -12,7 +13,10 @@ public class Client {
 //        String serverIPAddress = args[0];
 //        int serverPort = Integer.parseInt(args[1]);
 //        String username = args[2];
-
+        SwingUtilities.invokeLater(() -> {
+            ClientGUI clientGUI = new ClientGUI();
+            clientGUI.setVisible(true);
+        });
         try {
             ServerInterface client = (ServerInterface) Naming.lookup("rmi://localhost/ServerRemoteObj");
             String response = client.sayHello();

@@ -1,20 +1,22 @@
 import javax.swing.*;
 import java.awt.*;
+import javax.swing.JScrollPane;
 
 public class ServerGUI {
-    private javax.swing.JFrame frame;
-    private javax.swing.JList<String> clientList;
-    private javax.swing.DefaultListModel<String> clientListModel;
+    private JFrame frame;
+    private JList<String> clientList;
+    private DefaultListModel<String> clientListModel;
 
     public ServerGUI() {
-        frame = new javax.swing.JFrame("Shared Board White Server");
-        frame.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
-        frame.setSize(300, 400);
-        frame.setLayout(new java.awt.BorderLayout());
+        frame = new JFrame("Shared Board White Server");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(300, 500);
+        frame.setLayout(new BorderLayout());
 
+        // Display the joined clients list
         clientListModel = new javax.swing.DefaultListModel<>();
         clientList = new javax.swing.JList<>(clientListModel);
-        javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(clientList);
+        JScrollPane scrollPane = new JScrollPane(clientList);
         frame.add(scrollPane, java.awt.BorderLayout.CENTER);
 
         frame.setVisible(true);
