@@ -2,6 +2,7 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
+import java.rmi.NoSuchObjectException;
 import java.util.Random;
 import javax.swing.SwingUtilities;
 
@@ -35,6 +36,4 @@ public class Client {
             System.err.println("Remote object name is not currently bound: " + e.getMessage());
         }
     }
-
-
 }

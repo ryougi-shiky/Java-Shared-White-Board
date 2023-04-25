@@ -74,3 +74,21 @@ Phase 3 (Final):
        - You may need an event-based mechanism
      - How many threads do we need per peer?
        - At least one for drawing, one for messaging
+
+
+# ClientGUI:
+1. Support for line, circle, oval, and rectangle. Basic
+2. Text inputting– allow user to type text anywhere inside the white board. Basic
+3. At least 16 colours should be available. Basic
+4. Type a unique username to join the whiteboard. Basic
+5. Show other user's name in the same board. Basic
+6. Connect and Disconnect at any time. Basic
+7. Drawing together in real time. Basic
+
+
+# ServerGUI
+1. Can create a new whiteboard, open and save whiteboard. Advance
+2. Approve for clients to join in. Basic
+3. List all connected clients usernames. Basic
+4. Close app, all clients get notified. Basic
+5. Kick out a client. Advanced
