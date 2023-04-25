@@ -7,13 +7,11 @@ import java.rmi.NotBoundException;
 
 public class Server {
     public static void main(String[] args) {
-//        String serverIPAddress = args[0];
-//        int serverPort = Integer.parseInt(args[1]);
-//        String username = args[2];
+        int portNumber = ServerGUI.setup();
         ServerGUI serverGUI = new ServerGUI();
 
         try {
-            LocateRegistry.createRegistry(1099);
+            LocateRegistry.createRegistry(portNumber);
             ServerRemoteObj boardServer = new ServerRemoteObj(serverGUI);
             Naming.rebind("ServerRemoteObj", boardServer);
             System.out.println("Server is ready.");

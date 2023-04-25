@@ -11,17 +11,20 @@ public class Client {
     // A unique client name for using in the server
     private static String clientName;
     public static void main(String[] args) {
-//        String serverIPAddress = args[0];
-//        int serverPort = Integer.parseInt(args[1]);
-//        String username = args[2];
+        // Pop up a login panel when open the program
+        String[] loginInfo = ClientGUI.login();
+        String username = loginInfo[0];
+        String serverAddress = loginInfo[1];
+        String portNumber = loginInfo[2];
+
         SwingUtilities.invokeLater(() -> {
             ClientGUI clientGUI = new ClientGUI();
             clientGUI.setVisible(true);
         });
         try {
-            ServerInterface client = (ServerInterface) Naming.lookup("rmi://localhost/ServerRemoteObj");
-            String response = client.sayHello();
-            System.out.println("Response from the remote object: " + response);
+            ServerInterface client = (ServerInterface) Naming.lookup("rmi://" + serverAddress + ":" + portNumber + "/ServerRemoteObj");
+            System.out.println("Response from the remote object: " + client.sayHello());
+
             clientName = client.join();
             if (clientName == null){
                 System.out.println("The manager refused your join request.");

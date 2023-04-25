@@ -21,6 +21,32 @@ public class ClientGUI extends JFrame {
         drawBoard();
     }
 
+    public static String[] login() {
+        JTextField usernameField = new JTextField(15);
+        JTextField serverAddressField = new JTextField("127.0.0.1", 15);
+        JTextField portNumberField = new JTextField("4444", 15);
+
+        JPanel loginPanel = new JPanel(new GridLayout(0, 1));
+        loginPanel.add(new JLabel("Welcome to shared white board!"));
+        loginPanel.add(new JLabel("Please join a server:"));
+        loginPanel.add(new JLabel("Username:"));
+        loginPanel.add(usernameField);
+        loginPanel.add(new JLabel("Server Address:"));
+        loginPanel.add(serverAddressField);
+        loginPanel.add(new JLabel("Port Number:"));
+        loginPanel.add(portNumberField);
+
+        int result = JOptionPane.showConfirmDialog(null, loginPanel, "Join a Server", JOptionPane.OK_CANCEL_OPTION);
+
+        if (result == JOptionPane.OK_OPTION) {
+            return new String[]{usernameField.getText(), serverAddressField.getText(), portNumberField.getText()};
+        } else {
+            System.exit(0);
+            return null;
+        }
+    }
+
+
     private void TopBarMenu() {
         JMenuBar menuBar = new JMenuBar();
 
