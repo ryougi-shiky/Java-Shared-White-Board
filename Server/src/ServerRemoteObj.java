@@ -3,7 +3,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
+import javax.swing.*;
 
 public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterface {
     private ServerGUI serverGUI;
@@ -28,19 +28,20 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
         if (approveJoin(clientName)){
             // Add client to the list
             serverGUI.addClient(clientName);
+            clientList.add(clientName);
             return 0;
         } else { // Manager refused
             return 1;
         }
     }
     private static Boolean approveJoin(String clientName){
-        int response = javax.swing.JOptionPane.showConfirmDialog(
+        int response = JOptionPane.showConfirmDialog(
             null,
             clientName + " request to join the whiteboard",
             "New Client Request",
-            javax.swing.JOptionPane.YES_NO_OPTION
+            JOptionPane.YES_NO_OPTION
         );
-        return response == javax.swing.JOptionPane.YES_OPTION;
+        return response == JOptionPane.YES_OPTION;
     }
 //
 //    @Override

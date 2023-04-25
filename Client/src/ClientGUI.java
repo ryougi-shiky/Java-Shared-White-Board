@@ -36,7 +36,7 @@ public class ClientGUI extends JFrame {
         loginPanel.add(new JLabel("Port Number:"));
         loginPanel.add(portNumberField);
 
-        int result = JOptionPane.showConfirmDialog(null, loginPanel, "Join a Server", JOptionPane.OK_CANCEL_OPTION);
+        int result = JOptionPane.showConfirmDialog(null, loginPanel, "Join a Server", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
         if (result == JOptionPane.OK_OPTION) {
             return new String[]{usernameField.getText(), serverAddressField.getText(), portNumberField.getText()};
