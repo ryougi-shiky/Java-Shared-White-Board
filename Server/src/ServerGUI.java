@@ -22,6 +22,8 @@ public class ServerGUI {
         frame.setVisible(true);
     }
 
+    // Initialise the setting of the server.
+    // When open the program, pop up a window to enter the port number that the server will run on
     public static int setup() {
         JTextField portNumberField = new JTextField("50000", 15);
 
@@ -44,7 +46,6 @@ public class ServerGUI {
                 System.exit(0);
                 return 0;
             }
-
         }
     }
 

@@ -2,41 +2,62 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
-import java.rmi.NoSuchObjectException;
+import java.net.ConnectException;
 import java.util.Random;
 import javax.swing.SwingUtilities;
 
 public class Client {
     private static final Random random = new Random();
     // A unique client name for using in the server
-    private static String clientName;
+    private static String username;
+    private static String serverAddress;
+    private static String portNumber;
+    private static boolean connected = false;
     public static void main(String[] args) {
         // Pop up a login panel when open the program
-        String[] loginInfo = ClientGUI.login();
-        String username = loginInfo[0];
-        String serverAddress = loginInfo[1];
-        String portNumber = loginInfo[2];
+        login(ClientGUI.login());
+        System.out.println("login");
+        while(!connected) { // If client cannot connect to the server, keep retrying
+            try {
+                ServerInterface client = (ServerInterface) Naming.lookup("rmi://" + serverAddress + ":" + portNumber + "/ServerRemoteObj");
+                connected = true;
+                System.out.println("Response from the remote object: " + client.sayHello());
+                int isJoin = client.join(username);
+                while (true) {
+                    if (isJoin == 2) {
+                        ClientGUI.loginError("Username already exists! Please try other names.");
+                        login(ClientGUI.login()); // Retry
+                    } else if (isJoin == 1) {
+                        ClientGUI.loginError("Manager refused your connection!");
+                        login(ClientGUI.login()); // Retry
+                    } else { // Successfully joined in
+                        SwingUtilities.invokeLater(() -> {
+                            ClientGUI clientGUI = new ClientGUI();
+                            clientGUI.setVisible(true);
+                        });
+                        break;
+                    }
+                }
 
-        SwingUtilities.invokeLater(() -> {
-            ClientGUI clientGUI = new ClientGUI();
-            clientGUI.setVisible(true);
-        });
-        try {
-            ServerInterface client = (ServerInterface) Naming.lookup("rmi://" + serverAddress + ":" + portNumber + "/ServerRemoteObj");
-            System.out.println("Response from the remote object: " + client.sayHello());
-
-            clientName = client.join();
-            if (clientName == null){
-                System.out.println("The manager refused your join request.");
-                return;
+                System.out.println("Joined the server! Your name: " + username);
+            } catch (RemoteException e) {
+                if (e.getCause() instanceof ConnectException) {
+                    ClientGUI.loginError("Server not found! Please try other servers");
+                    login(ClientGUI.login()); // Retry
+                } else {
+                    e.printStackTrace();
+                }
+            } catch (MalformedURLException e) {
+                System.err.println("MalformedURLException: " + e.getMessage());
+            } catch (NotBoundException e) {
+                System.err.println("Remote object name is not currently bound: " + e.getMessage());
             }
-            System.out.println("Joined the server! Your name: " + clientName);
-        } catch (RemoteException e){
-            e.printStackTrace();
-        } catch (MalformedURLException e){
-            System.err.println("MalformedURLException: " + e.getMessage());
-        } catch (NotBoundException e){
-            System.err.println("Remote object name is not currently bound: " + e.getMessage());
         }
+    }
+
+    private static void login(String[] loginInfo){
+        username = loginInfo[0];
+        serverAddress = loginInfo[1];
+        portNumber = loginInfo[2];
     }
 }

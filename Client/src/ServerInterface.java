@@ -3,7 +3,7 @@ import java.rmi.RemoteException;
 
 public interface ServerInterface extends Remote {
     String sayHello() throws RemoteException;
-    String join() throws RemoteException;
+    int join(String clientName) throws RemoteException;
 //    void leave(String username) throws RemoteException;
 //    void broadcastMessage(String message) throws RemoteException;
 //    void updateWhiteboard(WhiteboardItem item) throws RemoteException;

@@ -24,7 +24,7 @@ public class ClientGUI extends JFrame {
     public static String[] login() {
         JTextField usernameField = new JTextField(15);
         JTextField serverAddressField = new JTextField("127.0.0.1", 15);
-        JTextField portNumberField = new JTextField("4444", 15);
+        JTextField portNumberField = new JTextField("50000", 15);
 
         JPanel loginPanel = new JPanel(new GridLayout(0, 1));
         loginPanel.add(new JLabel("Welcome to shared white board!"));
@@ -46,6 +46,9 @@ public class ClientGUI extends JFrame {
         }
     }
 
+    public static void loginError(String err){
+        JOptionPane.showMessageDialog(null, err, "Login Error", JOptionPane.ERROR_MESSAGE);
+    }
 
     private void TopBarMenu() {
         JMenuBar menuBar = new JMenuBar();
