@@ -3,16 +3,23 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
+import java.util.List;
 import java.awt.geom.*;
+import java.rmi.RemoteException;
 
 public class ClientGUI extends JFrame {
+    private ClientInterface client;
+    private ServerInterface server;
     private whiteBoard whiteBoard;
     private static Color[] colors = {Color.BLACK, Color.BLUE, Color.CYAN, Color.DARK_GRAY, Color.GRAY, Color.GREEN,
             Color.LIGHT_GRAY, Color.MAGENTA, Color.ORANGE, Color.PINK, Color.RED, Color.YELLOW,
             new Color(147, 112, 219), new Color(50, 205, 50), new Color(0, 191, 255), new Color(139, 69, 19)};
     // The last four colours are Medium Purple, Lime Green, Deep Sky Blue, Saddle Brown
 
-    public ClientGUI() {
+    public ClientGUI(ServerInterface server, ClientInterface client) {
+        this.server = server;
+        this.client = client;
+
         setTitle("Shared Whiteboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(900, 600);
@@ -46,7 +53,7 @@ public class ClientGUI extends JFrame {
         }
     }
 
-    public static void loginError(String err){
+    public static void loginError(String err) {
         JOptionPane.showMessageDialog(null, err, "Login Error", JOptionPane.ERROR_MESSAGE);
     }
 
@@ -217,6 +224,12 @@ public class ClientGUI extends JFrame {
                 board2D.setColor(currentColor);
                 board2D.draw(currentDrawing);
             }
+            // Draw to server
+            try {
+                server.draw(client);
+            } catch (RemoteException e){
+                e.printStackTrace();
+            }
         }
 
         public void createTextBox() {
@@ -241,5 +254,22 @@ public class ClientGUI extends JFrame {
             currentColor = color;
         }
 
+
+    }
+    // Used to send current board status to the server
+    public List<List<?>> getBoardStatus() {
+        List<List<?>> boardStatus = new ArrayList<>();
+        boardStatus.add(whiteBoard.shapes);
+        boardStatus.add(whiteBoard.colors);
+        boardStatus.add(whiteBoard.shapePositions);
+        return boardStatus;
+    }
+
+    // Get sync from server
+    public void updateBoardStatus(ArrayList<Object> shapes, ArrayList<Color> colors, ArrayList<Point> shapePositions) {
+        this.whiteBoard.shapes = shapes;
+        this.whiteBoard.colors = colors;
+        this.whiteBoard.shapePositions = shapePositions;
+        this.whiteBoard.repaint();
     }
 }

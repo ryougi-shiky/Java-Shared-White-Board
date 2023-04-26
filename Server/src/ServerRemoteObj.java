@@ -2,18 +2,17 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import javax.swing.*;
 import java.awt.*;
 
 public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterface {
     private ServerGUI serverGUI;
-    private List<String> clientList;
+    private List<String> clientList; //Name of clients
+    // White board status
     private ArrayList<Object> shapes;
     private ArrayList<Color> colors;
     private ArrayList<Point> shapePositions;
-    private List<ClientInterface> clients;
-    private static final Random random = new Random();
+    private List<ClientInterface> clients; // Clients objects
 
     public ServerRemoteObj(ServerGUI serverGUI) throws RemoteException {
         super();
@@ -39,6 +38,7 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
             clients.add(client);
             try {
                 client.test();
+                client.setClientName(clientName);
 
             } catch (RemoteException e){
                 e.printStackTrace();
@@ -59,8 +59,45 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
         return response == JOptionPane.YES_OPTION;
     }
 
-    public synchronized void draw(ClientInterface client){
+    public void syncBoardStatus(ClientInterface client){
+        try {
+            for (ClientInterface restClient: clients){
+                // Sync the board status to the rest clients
+                if (!restClient.getClientName().equals(client.getClientName())){
+                    restClient.updateBoardStatus(shapes, colors, shapePositions);
+                    System.out.println(restClient.getClientName() + " sync");
+                }
+            }
+        } catch (RemoteException e){
+            e.printStackTrace();
+        }
 
+    }
+
+    public synchronized void draw(ClientInterface client){
+        List<List<?>> boardStatus = new ArrayList<>();
+        try {
+            boardStatus = client.getBoardStatus();
+        } catch (RemoteException e){
+            e.printStackTrace();
+        }
+        shapes = new ArrayList<Object>(boardStatus.get(0));
+        colors = new ArrayList<Color>();
+        shapePositions = new ArrayList<Point>();
+
+        for (Object color : boardStatus.get(1)) {
+            colors.add((Color) color);
+        }
+        for (Object point : boardStatus.get(2)) {
+            shapePositions.add((Point) point);
+        }
+        try {
+            System.out.println(client.getClientName() + " drew");
+
+        } catch (RemoteException e){
+            e.printStackTrace();
+        }
+        syncBoardStatus(client);
     }
 //
 //    @Override

@@ -1,5 +1,7 @@
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.List;
+import java.util.ArrayList;
 
 public interface ServerInterface extends Remote {
     String sayHello() throws RemoteException;
@@ -11,10 +13,5 @@ public interface ServerInterface extends Remote {
 //    List<WhiteboardItem> getWhiteboardItems() throws RemoteException;
 }
 
-//public interface ClientInterface extends Remote {
-//    void receiveMessage(String message) throws RemoteException;
-//    void updateWhiteboard(WhiteboardItem item) throws RemoteException;
-//    // Additional methods for advanced features
-//}
 
 
