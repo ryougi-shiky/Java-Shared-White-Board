@@ -59,7 +59,7 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
         return response == JOptionPane.YES_OPTION;
     }
 
-    public void syncBoardStatus(ClientInterface client){
+    public synchronized void syncBoardStatus(ClientInterface client){
         try {
             for (ClientInterface restClient: clients){
                 // Sync the board status to the rest clients

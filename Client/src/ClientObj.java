@@ -29,7 +29,7 @@ public class ClientObj extends UnicastRemoteObject implements ClientInterface{
         return clientGUI.getBoardStatus();
     }
 
-    public void updateBoardStatus(ArrayList<Object> shapes, ArrayList<Color> colors, ArrayList<Point> shapePositions){
+    public synchronized void updateBoardStatus(ArrayList<Object> shapes, ArrayList<Color> colors, ArrayList<Point> shapePositions){
         clientGUI.updateBoardStatus(shapes, colors, shapePositions);
     }
 

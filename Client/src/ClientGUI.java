@@ -136,6 +136,7 @@ public class ClientGUI extends JFrame {
                     shapePositions.add(new Point(x, y));
                     currentDrawing = null;
                     repaint();
+                    drawToServer();
                 }
 
                 @Override
@@ -161,6 +162,7 @@ public class ClientGUI extends JFrame {
                 colors.add(currentColor);
                 textBox.setText("");
                 repaint();
+                drawToServer();
             });
             add(textBox);
         }
@@ -224,7 +226,9 @@ public class ClientGUI extends JFrame {
                 board2D.setColor(currentColor);
                 board2D.draw(currentDrawing);
             }
-            // Draw to server
+        }
+
+        private void drawToServer(){
             try {
                 server.draw(client);
             } catch (RemoteException e){
