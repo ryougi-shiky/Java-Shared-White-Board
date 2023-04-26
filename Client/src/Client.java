@@ -20,10 +20,11 @@ public class Client {
         System.out.println("login");
         while (!connected) { // If client cannot connect to the server, keep retrying
             try {
-                ServerInterface client = (ServerInterface) Naming.lookup("rmi://" + serverAddress + ":" + portNumber + "/ServerRemoteObj");
+                ClientObj client = new ClientObj();
+                ServerInterface server = (ServerInterface) Naming.lookup("rmi://" + serverAddress + ":" + portNumber + "/ServerRemoteObj");
                 connected = true;
-                System.out.println("Response from the remote object: " + client.sayHello());
-                int isJoin = client.join(username);
+                System.out.println("Response from the remote object: " + server.sayHello());
+                int isJoin = server.join(username, client);
                 while (true) {
                     if (isJoin == 2) {
                         System.out.println("name duplicate");

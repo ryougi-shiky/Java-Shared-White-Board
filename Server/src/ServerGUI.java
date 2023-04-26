@@ -6,18 +6,26 @@ public class ServerGUI {
     private JFrame frame;
     private JList<String> clientList;
     private DefaultListModel<String> clientListModel;
-
+    private static int serverPortNumber;
     public ServerGUI() {
         frame = new JFrame("Shared Board White Server");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(300, 500);
         frame.setLayout(new BorderLayout());
 
+        frame.add(new JLabel(" Connected Clients List: "), BorderLayout.NORTH);
+
+        // Add the server info panel
+        JPanel serverInfoPanel = new JPanel(new GridLayout(2,1));
+        serverInfoPanel.add(new JLabel(" Server Address: 127.0.0.1 "));
+        serverInfoPanel.add(new JLabel(" Port: " + serverPortNumber));
+        frame.add(serverInfoPanel, BorderLayout.SOUTH);
+
         // Display the joined clients list
-        clientListModel = new javax.swing.DefaultListModel<>();
-        clientList = new javax.swing.JList<>(clientListModel);
+        clientListModel = new DefaultListModel<>();
+        clientList = new JList<>(clientListModel);
         JScrollPane scrollPane = new JScrollPane(clientList);
-        frame.add(scrollPane, java.awt.BorderLayout.CENTER);
+        frame.add(scrollPane, BorderLayout.CENTER);
 
         frame.setVisible(true);
     }
@@ -40,6 +48,7 @@ public class ServerGUI {
                     JOptionPane.showMessageDialog(null, "Please enter a port number 49152 - 65535!",
                             "Invalid Port Number", JOptionPane.ERROR_MESSAGE);
                 } else {
+                    serverPortNumber = portNumber;
                     return portNumber;
                 }
             } else {
