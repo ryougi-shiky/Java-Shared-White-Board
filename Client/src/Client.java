@@ -43,6 +43,12 @@ public class Client {
                 SwingUtilities.invokeLater(() -> {
                     client.clientGUI = new ClientGUI(server, client);
                     client.clientGUI.setVisible(true);
+                    try {
+                        client.updateBoardStatus(server.getServerShapes(), server.getServerColors(), server.getServerShapesPositions());
+                    } catch (RemoteException e){
+                        System.out.println("Error on syncing server white board");
+                        e.printStackTrace();
+                    }
                 });
 
                 System.out.println("Joined the server! Your name: " + username);

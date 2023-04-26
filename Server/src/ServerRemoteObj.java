@@ -19,6 +19,9 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
         this.serverGUI = serverGUI;
         clientList = new ArrayList<>();
         clients = new ArrayList<>();
+        shapes = new ArrayList<>();
+        colors = new ArrayList<>();
+        shapePositions = new ArrayList<>();
     }
 
     @Override
@@ -39,7 +42,6 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
             try {
                 client.test();
                 client.setClientName(clientName);
-
             } catch (RemoteException e){
                 e.printStackTrace();
             }
@@ -71,7 +73,18 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
         } catch (RemoteException e){
             e.printStackTrace();
         }
+    }
 
+    public ArrayList<Object> getServerShapes(){
+        return shapes;
+    }
+
+    public ArrayList<Color> getServerColors(){
+        return colors;
+    }
+
+    public ArrayList<Point> getServerShapesPositions(){
+        return shapePositions;
     }
 
     public synchronized void draw(ClientInterface client){
