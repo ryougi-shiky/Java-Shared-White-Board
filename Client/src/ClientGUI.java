@@ -111,9 +111,9 @@ public class ClientGUI extends JFrame {
         private ArrayList<Color> colors;
         private ArrayList<Point> shapePositions;
         // Temporarily draw partial shapes
-        private Shape lastPartialShape;
-        private Color lastPartialColor;
-        private String lastPartialShapeType;
+        private Shape syncPartialDrawing;
+        private Color syncPartialColor;
+        private String syncPartialShape;
         private JTextField textBox;
         private boolean textBoxEnabled = false;
 
@@ -125,9 +125,9 @@ public class ClientGUI extends JFrame {
             colors = new ArrayList<>();
             shapePositions = new ArrayList<>();
 
-            lastPartialShape = null;
-            lastPartialColor = null;
-            lastPartialShapeType = null;
+            syncPartialDrawing = null;
+            syncPartialColor = null;
+            syncPartialShape = null;
 
 
             MouseAdapter mouseAdapter = new MouseAdapter() {
@@ -180,39 +180,18 @@ public class ClientGUI extends JFrame {
 
         // add a partial shape
         public void addPartialShape(Shape curDrawing, Color curColor, String curShape) {
-            lastPartialShape = curDrawing;
-            lastPartialColor = curColor;
-            lastPartialShapeType = curShape;
-            repaint();
-        }
+            syncPartialDrawing = curDrawing;
+            syncPartialColor = curColor;
+            syncPartialShape = curShape;
 
-        // Display partial draw from other clients
-        public void drawPartialShape(int startX, int startY, int curX, int curY, Shape curDrawing, Color curColor, String curShape) {
-            int tmpWidth = width;
-            width = curX - startX;
-            int tmpHeight = height;
-            height = curY - startY;
-            Shape tmpCurrentDrawing = currentDrawing;
-            Color tmpCurrentColor = currentColor;
-            String tmpShape = currentShape;
-            currentDrawing = curDrawing;
-            currentColor = curColor;
-            currentShape = curShape;
-            System.out.println("currentDrawing: " + currentDrawing + "  currentColor: " + currentColor);
             repaint();
-            System.out.println(" Partial drew");
-            width = tmpWidth;
-            height = tmpHeight;
-            currentDrawing = tmpCurrentDrawing;
-            currentColor = tmpCurrentColor;
-            currentShape = tmpShape;
         }
 
         // clear partial shapes after mouse released
         public void clearPartialShapes() {
-            lastPartialShape = null;
-            lastPartialColor = null;
-            lastPartialShapeType = null;
+            syncPartialDrawing = null;
+            syncPartialColor = null;
+            syncPartialShape = null;
             repaint();
         }
 
@@ -272,9 +251,9 @@ public class ClientGUI extends JFrame {
             }
 
             // Draw the partial shapes
-            if (lastPartialShape != null) {
-                board2D.setColor(lastPartialColor);
-                board2D.draw(lastPartialShape);
+            if (syncPartialDrawing != null) {
+                board2D.setColor(syncPartialColor);
+                board2D.draw(syncPartialDrawing);
             }
 
             // Display the current drawing shape
