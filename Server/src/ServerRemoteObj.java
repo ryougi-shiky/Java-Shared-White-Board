@@ -112,6 +112,34 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
         }
         syncBoardStatus(client);
     }
+
+    public synchronized void syncPartialDraw(ClientInterface client){
+        try {
+            for (ClientInterface restClient: clients){
+                // Sync the board status to the rest clients
+                if (!restClient.getClientName().equals(client.getClientName())){
+                    restClient.updateBoardStatus(shapes, colors, shapePositions);
+                    System.out.println(restClient.getClientName() + " sync");
+                }
+            }
+        } catch (RemoteException e){
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void partialDraw(ClientInterface client, Shape curDrawing, Color curColor, String curShape){
+        try {
+            for (ClientInterface restClient: clients){
+                // Sync the board status to the rest clients
+                if (!restClient.getClientName().equals(client.getClientName())){
+                    restClient.updatePartialDraw(curDrawing, curColor, curShape);
+                    System.out.println(restClient.getClientName() + " sync partial draw");
+                }
+            }
+        } catch (RemoteException e){
+            e.printStackTrace();
+        }
+    }
 //
 //    @Override
 //    public synchronized void leave(String username) {

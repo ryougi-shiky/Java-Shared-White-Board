@@ -33,6 +33,10 @@ public class ClientObj extends UnicastRemoteObject implements ClientInterface{
         clientGUI.updateBoardStatus(shapes, colors, shapePositions);
     }
 
+    public synchronized void updatePartialDraw(Shape curDrawing, Color curColor, String curShape){
+        clientGUI.updatePartialDraw(curDrawing, curColor, curShape);
+    }
+
     public void test(){
         System.out.println("You are under the server's control");
     }
