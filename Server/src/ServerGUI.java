@@ -17,6 +17,19 @@ public class ServerGUI {
         frame.setSize(300, 500);
         frame.setLayout(new BorderLayout());
 
+        // Add a "File" menu
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu fileMenu = new JMenu("File");
+        String[] files = {"Save", "Save As", "Open", "New", "Close"};
+        for (String file : files) {
+            JMenuItem fileOption = new JMenuItem(file);
+            fileOption.addActionListener(e -> fileSelect(file));
+            fileMenu.add(fileOption);
+        }
+        menuBar.add(fileMenu);
+        frame.setJMenuBar(menuBar);
+
         frame.add(new JLabel(" Connected Clients List: "), BorderLayout.NORTH);
 
         // Add the server info panel
@@ -45,25 +58,34 @@ public class ServerGUI {
             }
         });
 
-        // Create the popup menu with the "Kick Out" menu item
-        JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem kickOutMenuItem = new JMenuItem("Kick Out");
-        kickOutMenuItem.addActionListener(e -> {kickOut();});
-        popupMenu.add(kickOutMenuItem);
+        // "Kick Out" menu option
+        JPopupMenu rightClickMenu = new JPopupMenu();
+        JMenuItem kickOutOption = new JMenuItem("Kick Out");
+        kickOutOption.addActionListener(e -> {kickOut();});
+        rightClickMenu.add(kickOutOption);
 
         clientList.addMouseListener(new MouseAdapter() {
-            @Override
+            @Override // Mouse right click the client, display the "Kick out" option
             public void mouseClicked(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
                     int index = clientList.locationToIndex(e.getPoint());
                     if (index != -1) {
                         clientList.setSelectedIndex(index);
-                        popupMenu.show(clientList, e.getX(), e.getY());
+                        rightClickMenu.show(clientList, e.getX(), e.getY());
                     }
                 }
             }
         });
         frame.setVisible(true);
+    }
+
+    private void fileSelect(String option){
+        System.out.println("file option: "+option);
+        try {
+            server.fileSelect(option);
+        } catch (RemoteException e){
+            e.printStackTrace();
+        }
     }
 
     private void kickOut() {

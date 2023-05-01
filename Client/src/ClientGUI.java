@@ -347,7 +347,6 @@ public class ClientGUI extends JFrame {
     }
 
     public void kicked() {
-//        JOptionPane.showMessageDialog(this, "The server kicked you out.", "Forced Terminated", JOptionPane.WARNING_MESSAGE);
         JDialog dialog = new JDialog(this, "Notification", false);
         dialog.setSize(250, 100);
         dialog.setLocationRelativeTo(this);
@@ -355,8 +354,32 @@ public class ClientGUI extends JFrame {
         dialog.getContentPane().add(new JLabel(" The server kicked you out."));
         dialog.getContentPane().add(new JLabel(" Please close the window and retry."));
         dialog.setVisible(true);
-        client = null;
+        client = null; // Disconnect
         System.out.println("client is kicked out");
 //        System.exit(0);
+    }
+
+    public void clear() {
+        this.whiteBoard.shapes.clear();
+        this.whiteBoard.colors.clear();
+        this.whiteBoard.shapePositions.clear();
+
+        this.whiteBoard.syncPartialDrawing = null;
+        this.whiteBoard.syncPartialColor = null;
+        this.whiteBoard.syncPartialShape = null;
+
+        this.whiteBoard.currentDrawing = null;
+        this.whiteBoard.currentColor = Color.BLACK;
+        this.whiteBoard.currentShape = "Line";
+
+        this.whiteBoard.repaint();
+
+        JDialog dialog = new JDialog(this, "Notification", false);
+        dialog.setSize(250, 100);
+        dialog.setLocationRelativeTo(this);
+        dialog.getContentPane().setLayout(new BoxLayout(dialog.getContentPane(), BoxLayout.Y_AXIS));
+        dialog.getContentPane().add(new JLabel(" The server cleared the board."));
+        dialog.getContentPane().add(new JLabel(" This is a new file now."));
+        dialog.setVisible(true);
     }
 }

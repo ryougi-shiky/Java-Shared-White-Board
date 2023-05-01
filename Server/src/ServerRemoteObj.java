@@ -3,8 +3,13 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
+import java.util.*;
 import javax.swing.*;
 import java.awt.*;
+
+import org.json.simple.*;
+
+import java.io.*;
 
 public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterface {
     private ServerGUI serverGUI;
@@ -179,5 +184,88 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
             }
         }
         return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void save(File saveDir) {
+        if (saveDir == null) {
+            saveDir = new File("default_whiteboard_save.json");
+        }
+        try (FileWriter writer = new FileWriter(saveDir)) {
+            JSONObject data = new JSONObject();
+            JSONArray shapesJson = new JSONArray();
+            for (Object shape : shapes) {
+                shapesJson.add(shape);
+            }
+
+            JSONArray colorsJson = new JSONArray();
+            for (Color color : colors) {
+                colorsJson.add(color.getRGB());
+            }
+
+            JSONArray shapePositionsJson = new JSONArray();
+            for (Point position : shapePositions) {
+                JSONObject positionJson = new JSONObject();
+                positionJson.put("x", position.x);
+                positionJson.put("y", position.y);
+                shapePositionsJson.add(positionJson);
+            }
+
+            data.put("shapes", shapesJson);
+            data.put("colors", colorsJson);
+            data.put("shapePositions", shapePositionsJson);
+
+            writer.write(data.toJSONString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveAs() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
+        fileChooser.setDialogTitle("Save As");
+
+        // Optional: Set a default file name and extension
+        fileChooser.setSelectedFile(new File("default_whiteboard_save.json"));
+
+        int result = fileChooser.showSaveDialog(null);
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+
+            // Save your data to the selected file
+            save(selectedFile);
+        }
+    }
+
+    public void fileSelect(String option) {
+        switch (option) {
+            case "Save":
+                save(null);
+                break;
+            case "Save As":
+                saveAs();
+                break;
+            case "Open":
+
+                break;
+            case "New":
+                shapes.clear();
+                colors.clear();
+                shapePositions.clear();
+                for (ClientInterface client: clients){
+                    try {
+                        client.clear();
+                    } catch (RemoteException e){
+                        e.printStackTrace();
+                    }
+                }
+                break;
+            case "Close":
+                closeServer();
+                System.exit(0);
+                break;
+        }
     }
 }

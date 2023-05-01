@@ -15,9 +15,7 @@ public interface ServerInterface extends Remote {
     void leave(ClientInterface client) throws RemoteException;
     boolean kickout(String clientName) throws RemoteException;
     void closeServer() throws RemoteException;
-//    void broadcastMessage(String message) throws RemoteException;
-//    void updateWhiteboard(WhiteboardItem item) throws RemoteException;
-//    List<WhiteboardItem> getWhiteboardItems() throws RemoteException;
+    void fileSelect(String option) throws RemoteException;
 }
 
 

@@ -93,4 +93,4 @@ Phase 3 (Final):
 2. ^ Approve for clients to join in. Basic
 3. ^ List all connected clients usernames. Basic
 4. ^ Close app, all clients get notified. Basic
-5. Kick out a client. Advanced
+5. ^ Kick out a client. Advanced

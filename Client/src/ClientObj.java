@@ -42,6 +42,10 @@ public class ClientObj extends UnicastRemoteObject implements ClientInterface{
     public void kicked(){
         clientGUI.kicked();
     }
+
+    public void clear(){
+        clientGUI.clear();
+    }
     public void test(){
         System.out.println("You are under the server's control");
     }
