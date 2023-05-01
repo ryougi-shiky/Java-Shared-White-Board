@@ -1,8 +1,11 @@
 import javax.swing.*;
 import java.awt.*;
 import javax.swing.JScrollPane;
+import java.awt.event.*;
+import java.rmi.RemoteException;
 
 public class ServerGUI {
+    private ServerInterface server;
     private JFrame frame;
     private JList<String> clientList;
     private DefaultListModel<String> clientListModel;
@@ -28,6 +31,19 @@ public class ServerGUI {
         frame.add(scrollPane, BorderLayout.CENTER);
 
         frame.setVisible(true);
+
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    server.closeServer();
+                    System.out.println("Server notify server remote object to every client to close window");
+                } catch (RemoteException re) {
+                    re.printStackTrace();
+                }
+                System.exit(0);
+            }
+        });
     }
 
     // Initialise the setting of the server.
@@ -64,5 +80,9 @@ public class ServerGUI {
 
     public void removeClient(String clientName) {
         clientListModel.removeElement(clientName);
+    }
+
+    public void setServerInterface(ServerInterface server){
+        this.server = server;
     }
 }

@@ -14,6 +14,7 @@ public class Server {
             LocateRegistry.createRegistry(portNumber);
             ServerRemoteObj boardServer = new ServerRemoteObj(serverGUI);
             Naming.rebind("rmi://localhost:" + portNumber + "/ServerRemoteObj", boardServer);
+            serverGUI.setServerInterface(boardServer);
             System.out.println("Server is ready.");
         } catch (RemoteException e){
             e.printStackTrace();

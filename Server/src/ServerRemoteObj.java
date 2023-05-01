@@ -42,7 +42,7 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
             try {
                 client.test();
                 client.setClientName(clientName);
-            } catch (RemoteException e){
+            } catch (RemoteException e) {
                 e.printStackTrace();
             }
             return 0;
@@ -61,37 +61,37 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
         return response == JOptionPane.YES_OPTION;
     }
 
-    public synchronized void syncBoardStatus(ClientInterface client){
+    public synchronized void syncBoardStatus(ClientInterface client) {
         try {
-            for (ClientInterface restClient: clients){
+            for (ClientInterface restClient : clients) {
                 // Sync the board status to the rest clients
-                if (!restClient.getClientName().equals(client.getClientName())){
+                if (!restClient.getClientName().equals(client.getClientName())) {
                     restClient.updateBoardStatus(shapes, colors, shapePositions);
                     System.out.println(restClient.getClientName() + " sync");
                 }
             }
-        } catch (RemoteException e){
+        } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
 
-    public ArrayList<Object> getServerShapes(){
+    public ArrayList<Object> getServerShapes() {
         return shapes;
     }
 
-    public ArrayList<Color> getServerColors(){
+    public ArrayList<Color> getServerColors() {
         return colors;
     }
 
-    public ArrayList<Point> getServerShapesPositions(){
+    public ArrayList<Point> getServerShapesPositions() {
         return shapePositions;
     }
 
-    public synchronized void draw(ClientInterface client){
+    public synchronized void draw(ClientInterface client) {
         List<List<?>> boardStatus = new ArrayList<>();
         try {
             boardStatus = client.getBoardStatus();
-        } catch (RemoteException e){
+        } catch (RemoteException e) {
             e.printStackTrace();
         }
         shapes = new ArrayList<Object>(boardStatus.get(0));
@@ -107,22 +107,22 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
         try {
             System.out.println(client.getClientName() + " drew");
 
-        } catch (RemoteException e){
+        } catch (RemoteException e) {
             e.printStackTrace();
         }
         syncBoardStatus(client);
     }
 
-    public synchronized void partialDraw(ClientInterface client, Shape curDrawing, Color curColor, String curShape){
+    public synchronized void partialDraw(ClientInterface client, Shape curDrawing, Color curColor, String curShape) {
         try {
-            for (ClientInterface restClient: clients){
+            for (ClientInterface restClient : clients) {
                 // Sync the board status to the rest clients
-                if (!restClient.getClientName().equals(client.getClientName())){
+                if (!restClient.getClientName().equals(client.getClientName())) {
                     restClient.updatePartialDraw(curDrawing, curColor, curShape);
                     System.out.println(restClient.getClientName() + " sync partial draw");
                 }
             }
-        } catch (RemoteException e){
+        } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
@@ -130,33 +130,29 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
     public synchronized void leave(ClientInterface client) {
         try {
             clientList.remove(client.getClientName());
-            for (ClientInterface allClient: clients){
+            for (ClientInterface allClient : clients) {
                 // Sync the board status to the rest clients
-                if (!allClient.getClientName().equals(client.getClientName())){
+                if (!allClient.getClientName().equals(client.getClientName())) {
                     clients.remove(allClient);
                     serverGUI.removeClient(client.getClientName());
                     System.out.println(client.getClientName() + " left the server.");
                 }
             }
-        } catch (RemoteException e){
+        } catch (RemoteException e) {
             System.out.println("Error on client leaving server.");
             e.printStackTrace();
         }
     }
-//
-//    @Override
-//    public synchronized void broadcastMessage(String message) {
-//        // Broadcast message to all clients
-//    }
-//
-//    @Override
-//    public synchronized void updateWhiteboard(WhiteboardItem item) {
-//        // Update whiteboard state and broadcast the item to all clients
-//    }
-//
-//    @Override
-//    public synchronized List<WhiteboardItem> getWhiteboardItems() {
-//        // Return the current whiteboard state
-//        return null;
-//    }
+
+    public void closeServer() {
+        for (ClientInterface client : clients) {
+            try {
+                client.closeByServer();
+                System.out.println("server remote object notified clients to close windows");
+            } catch (RemoteException e) {
+                System.out.println("Error on closing clients window ");
+                e.printStackTrace();
+            }
+        }
+    }
 }

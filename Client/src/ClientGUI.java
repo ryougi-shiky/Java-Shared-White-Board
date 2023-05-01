@@ -28,14 +28,14 @@ public class ClientGUI extends JFrame {
         drawBoard();
 
         addWindowListener(new WindowAdapter() {
-            @Override
+            @Override // Close window, disconnect the whiteboard
             public void windowClosing(WindowEvent e) {
                 try {
                     server.leave(client); // Notify the server to remove this client
                 } catch (RemoteException ex) {
                     ex.printStackTrace();
                 }
-                dispose(); // Close the window after the server has been notified
+                dispose(); // Release this client's resource
             }
         });
     }
@@ -334,5 +334,11 @@ public class ClientGUI extends JFrame {
 
     public void updatePartialDraw(Shape curDrawing, Color curColor, String curShape){
         this.whiteBoard.addPartialShape(curDrawing, curColor, curShape);
+    }
+
+    public void closeByServer(){
+        JOptionPane.showMessageDialog(this, "The server has closed the connection.", "Server Closed", JOptionPane.ERROR_MESSAGE);
+        dispose();
+        System.out.println("client GUI Closed client's windows");
     }
 }

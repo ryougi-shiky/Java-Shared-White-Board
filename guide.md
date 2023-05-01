@@ -84,6 +84,7 @@ Phase 3 (Final):
 5. Show other user's name in the same board. Basic
 6. Connect and Disconnect at any time. Basic
 7. ^ Drawing together in real time. Basic
+8. Chat window. Advanced
 
 
 # ServerGUI

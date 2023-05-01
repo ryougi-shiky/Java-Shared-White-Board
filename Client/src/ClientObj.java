@@ -3,6 +3,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.awt.*;
+import javax.swing.*;
 
 public class ClientObj extends UnicastRemoteObject implements ClientInterface{
     // Constructor, GUI, and event listeners
@@ -11,9 +12,6 @@ public class ClientObj extends UnicastRemoteObject implements ClientInterface{
     public ClientObj() throws RemoteException {
         super();
     }
-//    public void updateWhiteboard(ClientGUI gui) {
-//        // Update the local whiteboard state
-//    }
 
     public void setClientName(String username) {
         // Update client name
@@ -37,13 +35,11 @@ public class ClientObj extends UnicastRemoteObject implements ClientInterface{
         clientGUI.updatePartialDraw(curDrawing, curColor, curShape);
     }
 
+    public void closeByServer(){
+        clientGUI.closeByServer();
+        System.out.println("client remote object notified client's GUI to close windows");
+    }
     public void test(){
         System.out.println("You are under the server's control");
     }
-
-//    public void setGUI(ClientGUI GUI){
-//        this.clientGUI = GUI;
-//    }
-
-    // Additional methods for advanced features
 }
