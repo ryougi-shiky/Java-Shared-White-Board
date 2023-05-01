@@ -3,7 +3,6 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.awt.*;
-import javax.swing.*;
 
 public interface ClientInterface extends Remote {
 //    void updateWhiteboard(ClientInterface client) throws RemoteException;

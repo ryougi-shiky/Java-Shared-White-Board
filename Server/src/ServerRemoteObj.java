@@ -154,5 +154,6 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
                 e.printStackTrace();
             }
         }
+        System.exit(0);
     }
 }

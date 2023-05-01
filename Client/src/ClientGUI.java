@@ -275,18 +275,18 @@ public class ClientGUI extends JFrame {
             }
         }
 
-        private void drawToServer(){
+        private void drawToServer() {
             try {
                 server.draw(client);
-            } catch (RemoteException e){
+            } catch (RemoteException e) {
                 e.printStackTrace();
             }
         }
 
-        private void drawPartialToServer(Shape curDrawing, Color curColor, String curShape){
+        private void drawPartialToServer(Shape curDrawing, Color curColor, String curShape) {
             try {
                 server.partialDraw(client, curDrawing, curColor, curShape);
-            } catch (RemoteException e){
+            } catch (RemoteException e) {
                 e.printStackTrace();
             }
         }
@@ -315,6 +315,7 @@ public class ClientGUI extends JFrame {
 
 
     }
+
     // Used to send current board status to the server
     public List<List<?>> getBoardStatus() {
         List<List<?>> boardStatus = new ArrayList<>();
@@ -332,13 +333,18 @@ public class ClientGUI extends JFrame {
         this.whiteBoard.repaint();
     }
 
-    public void updatePartialDraw(Shape curDrawing, Color curColor, String curShape){
+    public void updatePartialDraw(Shape curDrawing, Color curColor, String curShape) {
         this.whiteBoard.addPartialShape(curDrawing, curColor, curShape);
     }
 
-    public void closeByServer(){
-        JOptionPane.showMessageDialog(this, "The server has closed the connection.", "Server Closed", JOptionPane.ERROR_MESSAGE);
-        dispose();
+    public void closeByServer() {
+        JDialog dialog = new JDialog(this, "Notification", false);
+        dialog.setSize(250, 100);
+        dialog.setLocationRelativeTo(this);
+        dialog.getContentPane().setLayout(new BoxLayout(dialog.getContentPane(), BoxLayout.Y_AXIS));
+        dialog.getContentPane().add(new JLabel(" The server has closed the connection."));
+        dialog.getContentPane().add(new JLabel(" Please close the window and retry."));
+        dialog.setVisible(true);
         System.out.println("client GUI Closed client's windows");
     }
 }

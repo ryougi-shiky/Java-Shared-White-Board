@@ -3,7 +3,6 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.awt.*;
-import javax.swing.*;
 
 public class ClientObj extends UnicastRemoteObject implements ClientInterface{
     // Constructor, GUI, and event listeners

@@ -35,6 +35,7 @@ public class ServerGUI {
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                frame.dispose();
                 try {
                     server.closeServer();
                     System.out.println("Server notify server remote object to every client to close window");
