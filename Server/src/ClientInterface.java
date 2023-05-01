@@ -12,5 +12,6 @@ public interface ClientInterface extends Remote {
     void updateBoardStatus(ArrayList<Object> shapes, ArrayList<java.awt.Color> colors, ArrayList<java.awt.Point> shapePositions) throws RemoteException;
     void updatePartialDraw(Shape curDrawing, Color curColor, String curShape) throws RemoteException;
     void closeByServer() throws RemoteException;
+    void kicked() throws RemoteException;
     void test() throws RemoteException;
 }

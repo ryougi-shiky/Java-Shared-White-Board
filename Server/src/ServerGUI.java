@@ -10,6 +10,7 @@ public class ServerGUI {
     private JList<String> clientList;
     private DefaultListModel<String> clientListModel;
     private static int serverPortNumber;
+
     public ServerGUI() {
         frame = new JFrame("Shared Board White Server");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -19,7 +20,7 @@ public class ServerGUI {
         frame.add(new JLabel(" Connected Clients List: "), BorderLayout.NORTH);
 
         // Add the server info panel
-        JPanel serverInfoPanel = new JPanel(new GridLayout(2,1));
+        JPanel serverInfoPanel = new JPanel(new GridLayout(2, 1));
         serverInfoPanel.add(new JLabel(" Server Address: 127.0.0.1 "));
         serverInfoPanel.add(new JLabel(" Port: " + serverPortNumber));
         frame.add(serverInfoPanel, BorderLayout.SOUTH);
@@ -29,8 +30,6 @@ public class ServerGUI {
         clientList = new JList<>(clientListModel);
         JScrollPane scrollPane = new JScrollPane(clientList);
         frame.add(scrollPane, BorderLayout.CENTER);
-
-        frame.setVisible(true);
 
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -45,6 +44,45 @@ public class ServerGUI {
                 System.exit(0);
             }
         });
+
+        // Create the popup menu with the "Kick Out" menu item
+        JPopupMenu popupMenu = new JPopupMenu();
+        JMenuItem kickOutMenuItem = new JMenuItem("Kick Out");
+        kickOutMenuItem.addActionListener(e -> {kickOut();});
+        popupMenu.add(kickOutMenuItem);
+
+        clientList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    int index = clientList.locationToIndex(e.getPoint());
+                    if (index != -1) {
+                        clientList.setSelectedIndex(index);
+                        popupMenu.show(clientList, e.getX(), e.getY());
+                    }
+                }
+            }
+        });
+        frame.setVisible(true);
+    }
+
+    private void kickOut() {
+        // Mouse select a client in the list
+        int selectedIndex = clientList.getSelectedIndex();
+        if (selectedIndex != -1) {
+            String clientName = clientListModel.get(selectedIndex);
+
+            try {
+                boolean ifDel = server.kickout(clientName);
+                if (ifDel) {
+                    removeClient(clientName);
+                } else {
+                    System.out.println("The client " + clientName + " does not exist");
+                }
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     // Initialise the setting of the server.
@@ -57,11 +95,11 @@ public class ServerGUI {
         serverStartPanel.add(new JLabel("Please set the server port (49152-65535):"));
         serverStartPanel.add(portNumberField);
         int portNumber;
-        while (true){
+        while (true) {
             int result = JOptionPane.showConfirmDialog(null, serverStartPanel, "Join a Server", JOptionPane.OK_CANCEL_OPTION);
-            if (result == JOptionPane.OK_OPTION){
+            if (result == JOptionPane.OK_OPTION) {
                 portNumber = Integer.parseInt(portNumberField.getText());
-                if (portNumber < 49152 || portNumber > 65535){
+                if (portNumber < 49152 || portNumber > 65535) {
                     JOptionPane.showMessageDialog(null, "Please enter a port number 49152 - 65535!",
                             "Invalid Port Number", JOptionPane.ERROR_MESSAGE);
                 } else {
@@ -83,7 +121,7 @@ public class ServerGUI {
         clientListModel.removeElement(clientName);
     }
 
-    public void setServerInterface(ServerInterface server){
+    public void setServerInterface(ServerInterface server) {
         this.server = server;
     }
 }

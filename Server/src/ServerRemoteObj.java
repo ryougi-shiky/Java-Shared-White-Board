@@ -8,12 +8,12 @@ import java.awt.*;
 
 public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterface {
     private ServerGUI serverGUI;
-    private List<String> clientList; //Name of clients
+    public List<String> clientList; //Name of clients
     // White board status
     private ArrayList<Object> shapes;
     private ArrayList<Color> colors;
     private ArrayList<Point> shapePositions;
-    private List<ClientInterface> clients; // Clients objects
+    public List<ClientInterface> clients; // Clients objects
 
     public ServerRemoteObj(ServerGUI serverGUI) throws RemoteException {
         super();
@@ -158,5 +158,26 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
             }
         }
         System.exit(0);
+    }
+
+    public boolean kickout(String clientName) {
+        Iterator<ClientInterface> iterator = clients.iterator();
+        while (iterator.hasNext()) {
+            ClientInterface client = iterator.next();
+            try {
+                if (client.getClientName().equals(clientName)) {
+                    clientList.remove(client.getClientName());
+                    serverGUI.removeClient(client.getClientName());
+                    client.kicked();
+                    iterator.remove(); // Safely remove the client from the list
+                    System.out.println(client.getClientName() + " was kicked out.");
+                    return true;
+                }
+            } catch (RemoteException e) {
+                System.out.println("Error on kicking out a client.");
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 }

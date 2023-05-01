@@ -13,6 +13,7 @@ public interface ServerInterface extends Remote {
     ArrayList<Color> getServerColors() throws RemoteException;
     ArrayList<Point> getServerShapesPositions() throws RemoteException;
     void leave(ClientInterface client) throws RemoteException;
+    boolean kickout(String clientName) throws RemoteException;
     void closeServer() throws RemoteException;
 //    void broadcastMessage(String message) throws RemoteException;
 //    void updateWhiteboard(WhiteboardItem item) throws RemoteException;

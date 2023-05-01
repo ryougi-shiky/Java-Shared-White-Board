@@ -38,6 +38,10 @@ public class ClientObj extends UnicastRemoteObject implements ClientInterface{
         clientGUI.closeByServer();
         System.out.println("client remote object notified client's GUI to close windows");
     }
+
+    public void kicked(){
+        clientGUI.kicked();
+    }
     public void test(){
         System.out.println("You are under the server's control");
     }
