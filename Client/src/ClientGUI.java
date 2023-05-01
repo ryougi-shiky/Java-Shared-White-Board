@@ -360,6 +360,7 @@ public class ClientGUI extends JFrame {
     }
 
     public void clear() {
+        // Reset all values
         this.whiteBoard.shapes.clear();
         this.whiteBoard.colors.clear();
         this.whiteBoard.shapePositions.clear();

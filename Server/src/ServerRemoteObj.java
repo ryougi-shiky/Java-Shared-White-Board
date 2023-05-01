@@ -6,7 +6,9 @@ import java.util.Iterator;
 import java.util.*;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.*;
 
+import org.json.simple.parser.*;
 import org.json.simple.*;
 
 import java.io.*;
@@ -195,7 +197,30 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
             JSONObject data = new JSONObject();
             JSONArray shapesJson = new JSONArray();
             for (Object shape : shapes) {
-                shapesJson.add(shape);
+                JSONObject shapeJson = new JSONObject();
+                if (shape instanceof Line2D.Float) {
+                    Line2D.Float line = (Line2D.Float) shape;
+                    shapeJson.put("type", "line");
+                    shapeJson.put("x1", line.x1);
+                    shapeJson.put("y1", line.y1);
+                    shapeJson.put("x2", line.x2);
+                    shapeJson.put("y2", line.y2);
+                } else if (shape instanceof Ellipse2D.Float) {
+                    Ellipse2D.Float ellipse = (Ellipse2D.Float) shape;
+                    shapeJson.put("type", "ellipse");
+                    shapeJson.put("x", ellipse.x);
+                    shapeJson.put("y", ellipse.y);
+                    shapeJson.put("width", ellipse.width);
+                    shapeJson.put("height", ellipse.height);
+                } else if (shape instanceof Rectangle2D.Float) {
+                    Rectangle2D.Float rectangle = (Rectangle2D.Float) shape;
+                    shapeJson.put("type", "rectangle");
+                    shapeJson.put("x", rectangle.x);
+                    shapeJson.put("y", rectangle.y);
+                    shapeJson.put("width", rectangle.width);
+                    shapeJson.put("height", rectangle.height);
+                }
+                shapesJson.add(shapeJson);
             }
 
             JSONArray colorsJson = new JSONArray();
@@ -239,6 +264,94 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
         }
     }
 
+    private void open() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Open WhiteBoard");
+        int result = fileChooser.showOpenDialog(null);
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File openDir = fileChooser.getSelectedFile();
+
+            if (openDir != null) {
+                // Load the data from the selected file
+                try {
+                    try (FileReader reader = new FileReader(openDir)) {
+                        JSONParser parser = new JSONParser();
+                        JSONObject data = (JSONObject) parser.parse(reader);
+
+                        // Clear the current board
+                        shapes.clear();
+                        colors.clear();
+                        shapePositions.clear();
+
+                        // Parse the shapes, colors, and shapePositions lists from file
+                        JSONArray shapesJson = (JSONArray) data.get("shapes");
+                        JSONArray colorsJson = (JSONArray) data.get("colors");
+                        JSONArray shapePositionsJson = (JSONArray) data.get("shapePositions");
+
+                        for (Object shape : shapesJson) {
+                            JSONObject shapeObj = (JSONObject) shape;
+                            String type = (String) shapeObj.get("type");
+                            if ("line".equals(type)) {
+                                Line2D.Float line = new Line2D.Float(
+                                        ((Number) shapeObj.get("x1")).floatValue(),
+                                        ((Number) shapeObj.get("y1")).floatValue(),
+                                        ((Number) shapeObj.get("x2")).floatValue(),
+                                        ((Number) shapeObj.get("y2")).floatValue()
+                                );
+                                shapes.add(line);
+                            } else if ("ellipse".equals(type)) {
+                                Ellipse2D.Float ellipse = new Ellipse2D.Float(
+                                        ((Number) shapeObj.get("x")).floatValue(),
+                                        ((Number) shapeObj.get("y")).floatValue(),
+                                        ((Number) shapeObj.get("width")).floatValue(),
+                                        ((Number) shapeObj.get("height")).floatValue()
+                                );
+                                shapes.add(ellipse);
+                            } else if ("rectangle".equals(type)) {
+                                Rectangle2D.Float rectangle = new Rectangle2D.Float(
+                                        ((Number) shapeObj.get("x")).floatValue(),
+                                        ((Number) shapeObj.get("y")).floatValue(),
+                                        ((Number) shapeObj.get("width")).floatValue(),
+                                        ((Number) shapeObj.get("height")).floatValue()
+                                );
+                                shapes.add(rectangle);
+                            } else {
+                                System.out.println("Unexpected shape type: " + shape.getClass().getName()); // Add debug statement
+                            }
+                        }
+
+                        for (Object color : colorsJson) {
+                            colors.add(new Color(((Long) color).intValue()));
+                        }
+
+                        for (Object position : shapePositionsJson) {
+                            JSONObject positionJson = (JSONObject) position;
+                            int x = ((Long) positionJson.get("x")).intValue();
+                            int y = ((Long) positionJson.get("y")).intValue();
+                            shapePositions.add(new Point(x, y));
+                        }
+                    }
+                    System.out.println("Parsed from file");
+                    for (ClientInterface client : clients) {
+                        try {
+                            client.clear();
+                            client.updateBoardStatus(shapes, colors, shapePositions);
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    System.out.println("update to client");
+                } catch (IOException | ParseException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                // Show an error message or handle the null file case
+                System.err.println("No file was selected.");
+            }
+        }
+    }
+
     public void fileSelect(String option) {
         switch (option) {
             case "Save":
@@ -248,23 +361,22 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
                 saveAs();
                 break;
             case "Open":
-
+                open();
                 break;
             case "New":
                 shapes.clear();
                 colors.clear();
                 shapePositions.clear();
-                for (ClientInterface client: clients){
+                for (ClientInterface client : clients) {
                     try {
                         client.clear();
-                    } catch (RemoteException e){
+                    } catch (RemoteException e) {
                         e.printStackTrace();
                     }
                 }
                 break;
             case "Close":
                 closeServer();
-                System.exit(0);
                 break;
         }
     }
