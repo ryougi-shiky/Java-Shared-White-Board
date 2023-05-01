@@ -26,6 +26,18 @@ public class ClientGUI extends JFrame {
 
         TopBarMenu();
         drawBoard();
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    server.leave(client); // Notify the server to remove this client
+                } catch (RemoteException ex) {
+                    ex.printStackTrace();
+                }
+                dispose(); // Close the window after the server has been notified
+            }
+        });
     }
 
     public static String[] login() {
@@ -245,7 +257,7 @@ public class ClientGUI extends JFrame {
                 board2D.setColor(colors.get(i));
                 if (shapes.get(i) instanceof Shape) {
                     board2D.draw((Shape) shapes.get(i));
-                } else if (shapes.get(i) instanceof String) {
+                } else if (shapes.get(i) instanceof String) { // If it's text box
                     board2D.drawString((String) shapes.get(i), (int) shapePositions.get(i).getX(), (int) shapePositions.get(i).getY());
                 }
             }
