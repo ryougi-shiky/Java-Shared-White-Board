@@ -35,7 +35,7 @@ public class ClientGUI extends JFrame {
                 } catch (RemoteException ex) {
                     ex.printStackTrace();
                 }
-                dispose(); // Release this client's resource
+                System.exit(0);
             }
         });
     }
@@ -312,8 +312,6 @@ public class ClientGUI extends JFrame {
         public void setColor(Color color) {
             currentColor = color;
         }
-
-
     }
 
     // Used to send current board status to the server

@@ -2,6 +2,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 import javax.swing.*;
 import java.awt.*;
 
@@ -128,19 +129,21 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
     }
 
     public synchronized void leave(ClientInterface client) {
-        try {
-            clientList.remove(client.getClientName());
-            for (ClientInterface allClient : clients) {
-                // Sync the board status to the rest clients
-                if (!allClient.getClientName().equals(client.getClientName())) {
-                    clients.remove(allClient);
+        Iterator<ClientInterface> iterator = clients.iterator();
+        while (iterator.hasNext()) {
+            ClientInterface currentClient = iterator.next();
+            if (currentClient.equals(client)) {
+                try {
+                    clientList.remove(client.getClientName());
+                    iterator.remove(); // Safely remove the client from the list
                     serverGUI.removeClient(client.getClientName());
                     System.out.println(client.getClientName() + " left the server.");
+                    break;
+                } catch (RemoteException e) {
+                    System.out.println("Error on client leaving server.");
+                    e.printStackTrace();
                 }
             }
-        } catch (RemoteException e) {
-            System.out.println("Error on client leaving server.");
-            e.printStackTrace();
         }
     }
 
