@@ -40,17 +40,19 @@ public class Client {
                         break;
                     }
                 }
+
+                // set up whiteboard after logged in
                 SwingUtilities.invokeLater(() -> {
                     client.clientGUI = new ClientGUI(server, client);
-                    client.clientGUI.setVisible(true);
                     try {
+                        server.syncClientList();
                         client.updateBoardStatus(server.getServerShapes(), server.getServerColors(), server.getServerShapesPositions());
                     } catch (RemoteException e){
                         System.out.println("Error on syncing server white board");
                         e.printStackTrace();
                     }
+                    client.clientGUI.setVisible(true);
                 });
-
                 System.out.println("Joined the server! Your name: " + username);
             } catch (RemoteException e) {
                 if (e.getCause() instanceof ConnectException) {

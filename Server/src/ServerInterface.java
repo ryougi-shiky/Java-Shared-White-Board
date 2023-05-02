@@ -14,6 +14,7 @@ public interface ServerInterface extends Remote {
     ArrayList<Point> getServerShapesPositions() throws RemoteException;
     void leave(ClientInterface client) throws RemoteException;
     boolean kickout(String clientName) throws RemoteException;
+    void syncClientList() throws RemoteException;
     void closeServer() throws RemoteException;
     void fileSelect(String option) throws RemoteException;
 }

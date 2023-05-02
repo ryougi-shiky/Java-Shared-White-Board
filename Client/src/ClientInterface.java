@@ -3,6 +3,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.awt.*;
+import javax.swing.*;
 
 public interface ClientInterface extends Remote {
 //    void updateWhiteboard(ClientInterface client) throws RemoteException;
@@ -14,5 +15,6 @@ public interface ClientInterface extends Remote {
     void closeByServer() throws RemoteException;
     void kicked() throws RemoteException;
     void clear() throws RemoteException;
+    void updateClientsList(List<String> clientList) throws RemoteException;
     void test() throws RemoteException;
 }

@@ -16,6 +16,10 @@ public class ClientGUI extends JFrame {
             new Color(147, 112, 219), new Color(50, 205, 50), new Color(0, 191, 255), new Color(139, 69, 19)};
     // The last four colours are Medium Purple, Lime Green, Deep Sky Blue, Saddle Brown
 
+    // List of other users currently editing the board
+    private DefaultListModel<String> clientsListModel;
+    private JList<String> clientsList;
+
     public ClientGUI(ServerInterface server, ClientInterface client) {
         this.server = server;
         this.client = client;
@@ -26,6 +30,8 @@ public class ClientGUI extends JFrame {
 
         TopBarMenu();
         drawBoard();
+        rightPanel();
+        bottomPanel();
 
         addWindowListener(new WindowAdapter() {
             @Override // Close window, disconnect the whiteboard
@@ -112,6 +118,46 @@ public class ClientGUI extends JFrame {
         getContentPane().add(whiteBoard, BorderLayout.CENTER);
     }
 
+    private void rightPanel() {
+        clientsListModel = new DefaultListModel<>();
+        clientsList = new JList<>(clientsListModel);
+
+        JScrollPane userListScrollPane = new JScrollPane(clientsList);
+        userListScrollPane.setPreferredSize(new Dimension(200, 0));
+
+        JPanel userListPanel = new JPanel(new BorderLayout());
+        userListPanel.add(new JLabel("Online Clients"), BorderLayout.NORTH);
+        userListPanel.add(userListScrollPane, BorderLayout.CENTER);
+
+        add(userListPanel, BorderLayout.EAST);
+    }
+
+    private void bottomPanel() {
+        JPanel serverInfoPanel = new JPanel(new GridLayout(1, 1));
+        try {
+            serverInfoPanel.add(new JLabel(" Your name: " + client.getClientName()));
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        add(serverInfoPanel, BorderLayout.SOUTH);
+    }
+
+    public void updateClientsList(List<String> clientList) {
+        SwingUtilities.invokeLater(() -> {
+            DefaultListModel<String> listModel = new DefaultListModel<>();
+            for (String clientName : clientList) {
+                try { // Only show other online users
+                    if (!clientName.equals(client.getClientName())) {
+                        listModel.addElement(clientName);
+                    }
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+            clientsList.setModel(listModel);
+        });
+    }
+
     class whiteBoard extends JPanel {
         private Shape currentDrawing; // The shape is currently drawing. If null, currently not drawing.
         private Color currentColor = Color.BLACK;
@@ -140,7 +186,6 @@ public class ClientGUI extends JFrame {
             syncPartialDrawing = null;
             syncPartialColor = null;
             syncPartialShape = null;
-
 
             MouseAdapter mouseAdapter = new MouseAdapter() {
                 @Override
@@ -179,9 +224,12 @@ public class ClientGUI extends JFrame {
             textBox.addActionListener(e -> {
                 textBox.setVisible(false);
                 textBoxEnabled = false;
+                // Calculate the baseline position for the text box
+                FontMetrics fm = textBox.getFontMetrics(textBox.getFont());
+
                 // Only store the text string and its position, not the text box object itself
                 shapes.add(textBox.getText());
-                shapePositions.add(new Point(textBox.getX(), textBox.getY() + textBox.getHeight()));
+                shapePositions.add(new Point(textBox.getX(), (textBox.getY() + fm.getAscent())));
                 colors.add(currentColor);
                 textBox.setText("");
                 repaint();
@@ -312,6 +360,7 @@ public class ClientGUI extends JFrame {
         public void setColor(Color color) {
             currentColor = color;
         }
+
     }
 
     // Used to send current board status to the server
@@ -355,6 +404,7 @@ public class ClientGUI extends JFrame {
         dialog.getContentPane().add(new JLabel(" Please close the window and retry."));
         dialog.setVisible(true);
         client = null; // Disconnect
+        server = null;
         System.out.println("client is kicked out");
 //        System.exit(0);
     }
@@ -379,8 +429,8 @@ public class ClientGUI extends JFrame {
         dialog.setSize(250, 100);
         dialog.setLocationRelativeTo(this);
         dialog.getContentPane().setLayout(new BoxLayout(dialog.getContentPane(), BoxLayout.Y_AXIS));
-        dialog.getContentPane().add(new JLabel(" The server cleared the board."));
-        dialog.getContentPane().add(new JLabel(" This is a new file now."));
+        dialog.getContentPane().add(new JLabel(" The server open or create a new board."));
+        dialog.getContentPane().add(new JLabel(" This is a new board now."));
         dialog.setVisible(true);
     }
 }

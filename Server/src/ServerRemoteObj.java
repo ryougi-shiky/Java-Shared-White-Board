@@ -152,6 +152,7 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
                 }
             }
         }
+        syncClientList();
     }
 
     public void closeServer() {
@@ -174,6 +175,8 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
             try {
                 if (client.getClientName().equals(clientName)) {
                     clientList.remove(client.getClientName());
+                    syncClientList(); // client.kicked() will wait until window close
+                    // So sync the new clientList first
                     serverGUI.removeClient(client.getClientName());
                     client.kicked();
                     iterator.remove(); // Safely remove the client from the list
@@ -185,7 +188,19 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
                 e.printStackTrace();
             }
         }
+        syncClientList();
         return false;
+    }
+
+    public void syncClientList() {
+        for (ClientInterface client : clients) {
+            try {
+                client.updateClientsList(clientList);
+                System.out.println("server syncing client list");
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -212,13 +227,20 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
                     shapeJson.put("y", ellipse.y);
                     shapeJson.put("width", ellipse.width);
                     shapeJson.put("height", ellipse.height);
-                } else if (shape instanceof Rectangle2D.Float) {
-                    Rectangle2D.Float rectangle = (Rectangle2D.Float) shape;
+                } else if (shape instanceof Rectangle) {
+                    Rectangle rectangle = (Rectangle) shape;
                     shapeJson.put("type", "rectangle");
                     shapeJson.put("x", rectangle.x);
                     shapeJson.put("y", rectangle.y);
                     shapeJson.put("width", rectangle.width);
                     shapeJson.put("height", rectangle.height);
+                } else if (shape instanceof String) {
+                    String text = (String) shape;
+                    Point position = shapePositions.get(shapes.indexOf(text));
+                    shapeJson.put("type", "text");
+                    shapeJson.put("text", text);
+                    shapeJson.put("x", position.getX());
+                    shapeJson.put("y", position.getY());
                 }
                 shapesJson.add(shapeJson);
             }
@@ -309,15 +331,21 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
                                 );
                                 shapes.add(ellipse);
                             } else if ("rectangle".equals(type)) {
-                                Rectangle2D.Float rectangle = new Rectangle2D.Float(
-                                        ((Number) shapeObj.get("x")).floatValue(),
-                                        ((Number) shapeObj.get("y")).floatValue(),
-                                        ((Number) shapeObj.get("width")).floatValue(),
-                                        ((Number) shapeObj.get("height")).floatValue()
+                                Rectangle rectangle = new Rectangle(
+                                        ((Number) shapeObj.get("x")).intValue(),
+                                        ((Number) shapeObj.get("y")).intValue(),
+                                        ((Number) shapeObj.get("width")).intValue(),
+                                        ((Number) shapeObj.get("height")).intValue()
                                 );
                                 shapes.add(rectangle);
+                            } else if ("text".equals(type)) {
+                                String text = (String) shapeObj.get("text");
+                                int x = ((Number) shapeObj.get("x")).intValue();
+                                int y = ((Number) shapeObj.get("y")).intValue();
+                                shapes.add(text);
+                                shapePositions.add(new Point(x, y));
                             } else {
-                                System.out.println("Unexpected shape type: " + shape.getClass().getName()); // Add debug statement
+                                System.out.println("Error on opening board.");
                             }
                         }
 

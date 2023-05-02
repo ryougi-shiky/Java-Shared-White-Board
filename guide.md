@@ -81,11 +81,12 @@ Phase 3 (Final):
 2. ^ Text inputting– allow user to type text anywhere inside the white board. Basic
 3. ^ At least 16 colours should be available. Basic
 4. ^ Type a unique username to join the whiteboard. Basic
-5. Show other user's name in the same board. Basic
+5. ^ Show other user's name in the same board. Basic
 6. ^ Connect and Disconnect at any time. Basic
 7. ^ Drawing together in real time. Basic
 8. Chat window. Advanced
 9. ^ All the clients will see the identical image of the whiteboard. Basic
+10. ^ Show other client's name. Basic
 
 
 # ServerGUI

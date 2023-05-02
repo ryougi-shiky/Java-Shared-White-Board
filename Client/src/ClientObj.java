@@ -3,6 +3,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.awt.*;
+import java.util.*;
 
 public class ClientObj extends UnicastRemoteObject implements ClientInterface{
     // Constructor, GUI, and event listeners
@@ -46,6 +47,16 @@ public class ClientObj extends UnicastRemoteObject implements ClientInterface{
     public void clear(){
         clientGUI.clear();
     }
+
+    public void updateClientsList(List<String> clientList){
+        try {
+            clientGUI.updateClientsList(clientList);
+
+        } catch (NullPointerException e){
+            e.printStackTrace();
+        }
+    }
+
     public void test(){
         System.out.println("You are under the server's control");
     }
