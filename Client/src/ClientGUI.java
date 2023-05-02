@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.List;
 import java.awt.geom.*;
 import java.rmi.RemoteException;
+import javax.imageio.ImageIO;
+import java.io.*;
 
 public class ClientGUI extends JFrame {
     private ClientInterface client;
@@ -130,7 +132,7 @@ public class ClientGUI extends JFrame {
         private boolean textBoxEnabled = false;
 
         public whiteBoard() {
-            setPreferredSize(new Dimension(800, 600));
+            setPreferredSize(new Dimension(900, 600));
             setBackground(Color.WHITE);
 
             shapes = new ArrayList<>();
@@ -383,4 +385,28 @@ public class ClientGUI extends JFrame {
         dialog.getContentPane().add(new JLabel(" This is a new file now."));
         dialog.setVisible(true);
     }
+
+    public int getBoardWidth(){
+        return this.getWidth();
+    }
+
+    public int getBoardHeight(){
+        return this.getHeight();
+    }
+
+    public byte[] export() {
+        BufferedImage image = new BufferedImage(getBoardWidth(), getBoardHeight(), BufferedImage.TYPE_INT_RGB);
+        ByteArrayOutputStream output = new ByteArrayOutputStream(); // Serialise the image
+        Graphics2D g2d = image.createGraphics();
+        whiteBoard.paint(g2d);
+        g2d.dispose();
+        try {
+            ImageIO.write(image, "jpg", output);
+        } catch (IOException e) {
+            System.out.println("Error on converting image to byte array");
+            e.printStackTrace();
+        }
+        return output.toByteArray();
+    }
+
 }

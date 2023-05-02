@@ -3,6 +3,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.awt.*;
+import java.awt.image.*;
 
 public interface ClientInterface extends Remote {
 //    void updateWhiteboard(ClientInterface client) throws RemoteException;
@@ -14,5 +15,6 @@ public interface ClientInterface extends Remote {
     void closeByServer() throws RemoteException;
     void kicked() throws RemoteException;
     void clear() throws RemoteException;
+    byte[] export() throws RemoteException;
     void test() throws RemoteException;
 }

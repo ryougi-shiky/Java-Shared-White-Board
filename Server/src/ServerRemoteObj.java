@@ -7,10 +7,12 @@ import java.util.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.*;
+import java.awt.image.*;
 
 import org.json.simple.parser.*;
 import org.json.simple.*;
 
+import javax.imageio.*;
 import java.io.*;
 
 public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterface {
@@ -188,61 +190,31 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
         return false;
     }
 
-    @SuppressWarnings("unchecked")
     private void save(File saveDir) {
         if (saveDir == null) {
-            saveDir = new File("default_whiteboard_save.json");
+            saveDir = new File("default_whiteboard_save.jpg");
         }
-        try (FileWriter writer = new FileWriter(saveDir)) {
-            JSONObject data = new JSONObject();
-            JSONArray shapesJson = new JSONArray();
-            for (Object shape : shapes) {
-                JSONObject shapeJson = new JSONObject();
-                if (shape instanceof Line2D.Float) {
-                    Line2D.Float line = (Line2D.Float) shape;
-                    shapeJson.put("type", "line");
-                    shapeJson.put("x1", line.x1);
-                    shapeJson.put("y1", line.y1);
-                    shapeJson.put("x2", line.x2);
-                    shapeJson.put("y2", line.y2);
-                } else if (shape instanceof Ellipse2D.Float) {
-                    Ellipse2D.Float ellipse = (Ellipse2D.Float) shape;
-                    shapeJson.put("type", "ellipse");
-                    shapeJson.put("x", ellipse.x);
-                    shapeJson.put("y", ellipse.y);
-                    shapeJson.put("width", ellipse.width);
-                    shapeJson.put("height", ellipse.height);
-                } else if (shape instanceof Rectangle2D.Float) {
-                    Rectangle2D.Float rectangle = (Rectangle2D.Float) shape;
-                    shapeJson.put("type", "rectangle");
-                    shapeJson.put("x", rectangle.x);
-                    shapeJson.put("y", rectangle.y);
-                    shapeJson.put("width", rectangle.width);
-                    shapeJson.put("height", rectangle.height);
-                }
-                shapesJson.add(shapeJson);
-            }
 
-            JSONArray colorsJson = new JSONArray();
-            for (Color color : colors) {
-                colorsJson.add(color.getRGB());
-            }
-
-            JSONArray shapePositionsJson = new JSONArray();
-            for (Point position : shapePositions) {
-                JSONObject positionJson = new JSONObject();
-                positionJson.put("x", position.x);
-                positionJson.put("y", position.y);
-                shapePositionsJson.add(positionJson);
-            }
-
-            data.put("shapes", shapesJson);
-            data.put("colors", colorsJson);
-            data.put("shapePositions", shapePositionsJson);
-
-            writer.write(data.toJSONString());
-        } catch (IOException e) {
+        byte[] imageBytes = null;
+        try {
+            imageBytes = clients.get(0).export();
+        } catch (RemoteException e) {
             e.printStackTrace();
+        }
+
+        if (imageBytes != null) {
+            try {
+                BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageBytes));
+                try {
+                    ImageIO.write(image, "jpg", saveDir);
+                    System.out.println("Image saved: " + saveDir.getAbsolutePath());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -252,7 +224,7 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
         fileChooser.setDialogTitle("Save As");
 
         // Optional: Set a default file name and extension
-        fileChooser.setSelectedFile(new File("default_whiteboard_save.json"));
+        fileChooser.setSelectedFile(new File("default_whiteboard_save.jpg"));
 
         int result = fileChooser.showSaveDialog(null);
 
