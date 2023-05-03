@@ -95,3 +95,19 @@ Phase 3 (Final):
 3. ^ List all connected clients usernames. Basic
 4. ^ Close app, all clients get notified. Basic
 5. ^ Kick out a client. Advanced
+
+
+
+# Report
+1. System architecture
+2. Communication protocol
+3. message formats
+4. design diagrams (class and interaction)
+5. implementation details
+6. new innovations
+
+
+# Report Submission
+1. PDF only
+2. The executable jar files used to run your system’s clients/server(s)
+3. source files in a .ZIP or .TAR archive only.

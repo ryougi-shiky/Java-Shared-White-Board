@@ -3,6 +3,7 @@ import java.awt.*;
 import javax.swing.JScrollPane;
 import java.awt.event.*;
 import java.rmi.RemoteException;
+import java.lang.NumberFormatException;
 
 public class ServerGUI {
     private ServerInterface server;
@@ -61,7 +62,9 @@ public class ServerGUI {
         // "Kick Out" menu option
         JPopupMenu rightClickMenu = new JPopupMenu();
         JMenuItem kickOutOption = new JMenuItem("Kick Out");
-        kickOutOption.addActionListener(e -> {kickOut();});
+        kickOutOption.addActionListener(e -> {
+            kickOut();
+        });
         rightClickMenu.add(kickOutOption);
 
         clientList.addMouseListener(new MouseAdapter() {
@@ -79,11 +82,11 @@ public class ServerGUI {
         frame.setVisible(true);
     }
 
-    private void fileSelect(String option){
-        System.out.println("file option: "+option);
+    private void fileSelect(String option) {
+        System.out.println("file option: " + option);
         try {
             server.fileSelect(option);
-        } catch (RemoteException e){
+        } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
@@ -118,9 +121,15 @@ public class ServerGUI {
         serverStartPanel.add(portNumberField);
         int portNumber;
         while (true) {
-            int result = JOptionPane.showConfirmDialog(null, serverStartPanel, "Join a Server", JOptionPane.OK_CANCEL_OPTION);
+            int result = JOptionPane.showConfirmDialog(null, serverStartPanel, "Start a Server", JOptionPane.OK_CANCEL_OPTION);
             if (result == JOptionPane.OK_OPTION) {
-                portNumber = Integer.parseInt(portNumberField.getText());
+                try { // Check if contains invalid characters
+                    portNumber = Integer.parseInt(portNumberField.getText());
+                } catch (NumberFormatException e) {
+                    setupError("Invalid port number! Please try again");
+                    e.printStackTrace();
+                    continue;
+                }
                 if (portNumber < 49152 || portNumber > 65535) {
                     JOptionPane.showMessageDialog(null, "Please enter a port number 49152 - 65535!",
                             "Invalid Port Number", JOptionPane.ERROR_MESSAGE);
@@ -145,5 +154,9 @@ public class ServerGUI {
 
     public void setServerInterface(ServerInterface server) {
         this.server = server;
+    }
+
+    public static void setupError(String err) {
+        JOptionPane.showMessageDialog(null, err, "Login Error", JOptionPane.ERROR_MESSAGE);
     }
 }

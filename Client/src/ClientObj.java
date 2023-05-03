@@ -56,8 +56,4 @@ public class ClientObj extends UnicastRemoteObject implements ClientInterface{
             e.printStackTrace();
         }
     }
-
-    public void test(){
-        System.out.println("You are under the server's control");
-    }
 }

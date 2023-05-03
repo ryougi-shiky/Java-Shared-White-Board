@@ -15,12 +15,12 @@ import java.io.*;
 
 public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterface {
     private ServerGUI serverGUI;
-    public List<String> clientList; //Name of clients
+    public List<String> clientList; //Name of connected clients
     // White board status
     private ArrayList<Object> shapes;
     private ArrayList<Color> colors;
     private ArrayList<Point> shapePositions;
-    public List<ClientInterface> clients; // Clients objects
+    public List<ClientInterface> clients; // Connected clients objects
 
     public ServerRemoteObj(ServerGUI serverGUI) throws RemoteException {
         super();
@@ -30,11 +30,6 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
         shapes = new ArrayList<>();
         colors = new ArrayList<>();
         shapePositions = new ArrayList<>();
-    }
-
-    @Override
-    public String sayHello() throws RemoteException {
-        return "Hello from the remote object!";
     }
 
     public synchronized int join(String clientName, ClientInterface client) {
@@ -48,7 +43,6 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
             clientList.add(clientName);
             clients.add(client);
             try {
-                client.test();
                 client.setClientName(clientName);
             } catch (RemoteException e) {
                 e.printStackTrace();

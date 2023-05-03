@@ -97,7 +97,7 @@ public class ClientGUI extends JFrame {
 
         JMenu textMenu = new JMenu("Text");
         JMenuItem menuItem = new JMenuItem("Add Text Box");
-        menuItem.addActionListener(e -> whiteBoard.createTextBox());
+        menuItem.addActionListener(e -> whiteBoard.enableTextBox());
         textMenu.add(menuItem);
         menuBar.add(textMenu);
 
@@ -220,9 +220,9 @@ public class ClientGUI extends JFrame {
 
             textBox = new JTextField();
             textBox.setBounds(0, 0, 100, 20);
-            textBox.setVisible(false);
+            textBox.setVisible(false); // Hide text box until user need to use text box
             textBox.addActionListener(e -> {
-                textBox.setVisible(false);
+                textBox.setVisible(false); // Finish enter text, set text box back to invisible
                 textBoxEnabled = false;
                 // Calculate the baseline position for the text box
                 FontMetrics fm = textBox.getFontMetrics(textBox.getFont());
@@ -339,7 +339,7 @@ public class ClientGUI extends JFrame {
             }
         }
 
-        public void createTextBox() {
+        public void enableTextBox() {
             textBoxEnabled = true;
         }
 
