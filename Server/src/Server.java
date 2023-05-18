@@ -15,6 +15,9 @@ public class Server {
             Naming.rebind("rmi://localhost:" + portNumber + "/ServerRemoteObj", boardServer);
             serverGUI.setServerInterface(boardServer);
             System.out.println("Server is ready.");
+            System.out.println("Registering manager.");
+            boardServer.setManagerName(serverGUI.getManagerName());
+            System.out.println("Manager registered successfully.");
         } catch (RemoteException | MalformedURLException e){
             e.printStackTrace();
         }

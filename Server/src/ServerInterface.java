@@ -6,6 +6,7 @@ import java.awt.*;
 
 public interface ServerInterface extends Remote {
     int join(String clientName, ClientInterface client) throws RemoteException;
+    public String getManagerName() throws RemoteException;
     // Receive client's drawn shapes
     void draw(ClientInterface client) throws RemoteException;
     void partialDraw(ClientInterface client, Shape curDrawing, Color curColor, String curShape) throws RemoteException;

@@ -6,11 +6,14 @@ import java.rmi.RemoteException;
 import java.lang.NumberFormatException;
 
 public class ServerGUI {
-    private ServerInterface server;
+    private static ServerInterface server;
+    private static ClientInterface manager;
     private JFrame frame;
     private JList<String> clientList;
     private DefaultListModel<String> clientListModel;
     private static int serverPortNumber;
+    private static ClientGUI whiteBoard;
+    private static String managerName;
 
     public ServerGUI() {
         frame = new JFrame("Shared Board White Server");
@@ -34,9 +37,10 @@ public class ServerGUI {
         frame.add(new JLabel(" Connected Clients List: "), BorderLayout.NORTH);
 
         // Add the server info panel
-        JPanel serverInfoPanel = new JPanel(new GridLayout(2, 1));
+        JPanel serverInfoPanel = new JPanel(new GridLayout(3, 1));
         serverInfoPanel.add(new JLabel(" Server Address: 127.0.0.1 "));
         serverInfoPanel.add(new JLabel(" Port: " + serverPortNumber));
+        serverInfoPanel.add(new JLabel(" Manager Name: " + managerName));
         frame.add(serverInfoPanel, BorderLayout.SOUTH);
 
         // Display the joined clients list
@@ -113,13 +117,19 @@ public class ServerGUI {
     // Initialise the setting of the server.
     // When open the program, pop up a window to enter the port number that the server will run on
     public static int setup() {
+        JTextField usernameField = new JTextField(15);
         JTextField portNumberField = new JTextField("50000", 15);
 
         JPanel serverStartPanel = new JPanel(new GridLayout(0, 1));
-        serverStartPanel.add(new JLabel("Welcome to shared white board!"));
+        serverStartPanel.add(new JLabel("Welcome to shared whiteboard!"));
+        serverStartPanel.add(new JLabel("Create your whiteboard server"));
         serverStartPanel.add(new JLabel("Please set the server port (49152-65535):"));
         serverStartPanel.add(portNumberField);
+        serverStartPanel.add(new JLabel("Username:"));
+        serverStartPanel.add(usernameField);
+
         int portNumber;
+
         while (true) {
             int result = JOptionPane.showConfirmDialog(null, serverStartPanel, "Start a Server", JOptionPane.OK_CANCEL_OPTION);
             if (result == JOptionPane.OK_OPTION) {
@@ -133,7 +143,8 @@ public class ServerGUI {
                 if (portNumber < 49152 || portNumber > 65535) {
                     JOptionPane.showMessageDialog(null, "Please enter a port number 49152 - 65535!",
                             "Invalid Port Number", JOptionPane.ERROR_MESSAGE);
-                } else {
+                } else { // setup success
+                    managerName = usernameField.getText();
                     serverPortNumber = portNumber;
                     return portNumber;
                 }
@@ -142,6 +153,16 @@ public class ServerGUI {
                 return 0;
             }
         }
+    }
+
+    public static void managerWhiteBoard(JFrame frame){
+        whiteBoard = new ClientGUI(server, manager);
+        whiteBoard.setPreferredSize(new Dimension(500, 500));  // adjust to your needs
+        frame.add(whiteBoard, BorderLayout.EAST);
+    }
+
+    public String getManagerName(){
+        return managerName;
     }
 
     public void addClient(String clientName) {

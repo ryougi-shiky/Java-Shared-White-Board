@@ -15,6 +15,7 @@ import java.io.*;
 
 public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterface {
     private ServerGUI serverGUI;
+    private String managerName;
     public List<String> clientList; //Name of connected clients
     // White board status
     private ArrayList<Object> shapes;
@@ -61,6 +62,13 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
                 JOptionPane.YES_NO_OPTION
         );
         return response == JOptionPane.YES_OPTION;
+    }
+
+    public void setManagerName(String managerName){
+        this.managerName = managerName;
+    }
+    public String getManagerName(){
+        return this.managerName;
     }
 
     public synchronized void syncBoardStatus(ClientInterface client) {
