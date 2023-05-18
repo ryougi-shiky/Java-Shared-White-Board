@@ -8,17 +8,17 @@ import java.lang.NumberFormatException;
 public class ServerGUI {
     private static ServerInterface server;
     private static ClientInterface manager;
-    private JFrame frame;
+    private static JFrame frame;
     private JList<String> clientList;
     private DefaultListModel<String> clientListModel;
     private static int serverPortNumber;
-    private static ClientGUI whiteBoard;
     private static String managerName;
+    private whiteBoard whiteBoard;
 
     public ServerGUI() {
         frame = new JFrame("Shared Board White Server");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(300, 500);
+        frame.setSize(900, 600);
         frame.setLayout(new BorderLayout());
 
         // Add a "File" menu
@@ -83,6 +83,9 @@ public class ServerGUI {
                 }
             }
         });
+
+        managerWhiteBoard();
+
         frame.setVisible(true);
     }
 
@@ -155,10 +158,15 @@ public class ServerGUI {
         }
     }
 
-    public static void managerWhiteBoard(JFrame frame){
-        whiteBoard = new ClientGUI(server, manager);
-        whiteBoard.setPreferredSize(new Dimension(500, 500));  // adjust to your needs
+    public void managerWhiteBoard(){
+        // Create whiteboard on the right side.
+        whiteBoard = new whiteBoard();
         frame.add(whiteBoard, BorderLayout.EAST);
+//        JPanel whiteboardPanel = new JPanel();
+//        frame.add(whiteboardPanel, BorderLayout.EAST);
+//        whiteboardPanel.setPreferredSize(new Dimension(700, 600));
+
+
     }
 
     public String getManagerName(){
@@ -179,5 +187,210 @@ public class ServerGUI {
 
     public static void setupError(String err) {
         JOptionPane.showMessageDialog(null, err, "Login Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    class whiteBoard extends JPanel {
+        private Shape currentDrawing; // The shape is currently drawing. If null, currently not drawing.
+        private Color currentColor = Color.BLACK;
+        private String currentShape = "Line";
+        private int x, y; // Mouse position
+        private int width, height; // Used for drawing shapes. Computed by mouse position
+        // store drawn shapes , positions and corresponding colours
+        private java.util.ArrayList<Object> shapes;
+        private java.util.ArrayList<java.awt.Color> colors;
+        private java.util.ArrayList<java.awt.Point> shapePositions;
+        // Temporarily draw partial shapes
+        private Shape syncPartialDrawing;
+        private Color syncPartialColor;
+        private String syncPartialShape;
+        private JTextField textBox;
+        private boolean textBoxEnabled = false;
+
+        public whiteBoard() {
+            setPreferredSize(new Dimension(700, 600));
+            setBackground(Color.WHITE);
+
+            shapes = new java.util.ArrayList<>();
+            colors = new java.util.ArrayList<>();
+            shapePositions = new java.util.ArrayList<>();
+
+            syncPartialDrawing = null;
+            syncPartialColor = null;
+            syncPartialShape = null;
+
+            MouseAdapter mouseAdapter = new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    x = e.getX();
+                    y = e.getY();
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    clearPartialShapes();
+                    drawShape(e);
+                    shapes.add(currentDrawing);
+                    colors.add(currentColor);
+                    shapePositions.add(new Point(x, y));
+                    currentDrawing = null;
+                    repaint();
+//                    drawToServer();
+                }
+
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    drawShape(e);
+//                    drawPartialToServer(currentDrawing, currentColor, currentShape);
+                    repaint();
+                }
+            };
+
+            addMouseListener(mouseAdapter);
+            addMouseMotionListener(mouseAdapter);
+
+
+            textBox = new JTextField();
+            textBox.setBounds(0, 0, 100, 20);
+            textBox.setVisible(false); // Hide text box until user need to use text box
+            textBox.addActionListener(e -> {
+                textBox.setVisible(false); // Finish enter text, set text box back to invisible
+                textBoxEnabled = false;
+                // Calculate the baseline position for the text box
+                FontMetrics fm = textBox.getFontMetrics(textBox.getFont());
+
+                // Only store the text string and its position, not the text box object itself
+                shapes.add(textBox.getText());
+                shapePositions.add(new Point(textBox.getX(), (textBox.getY() + fm.getAscent())));
+                colors.add(currentColor);
+                textBox.setText("");
+                repaint();
+//                drawToServer();
+            });
+            add(textBox);
+        }
+
+        // add a partial shape
+        public void addPartialShape(Shape curDrawing, Color curColor, String curShape) {
+            syncPartialDrawing = curDrawing;
+            syncPartialColor = curColor;
+            syncPartialShape = curShape;
+
+            repaint();
+        }
+
+        // clear partial shapes after mouse released
+        public void clearPartialShapes() {
+            syncPartialDrawing = null;
+            syncPartialColor = null;
+            syncPartialShape = null;
+            repaint();
+        }
+
+
+        private void drawShape(MouseEvent e) {
+            width = e.getX() - x;
+            height = e.getY() - y;
+
+            switch (currentShape) {
+                case "Line":
+                    currentDrawing = new java.awt.geom.Line2D.Float(x, y, e.getX(), e.getY());
+                    break;
+                case "Circle":
+                    int diameter = Math.max(Math.abs(width), Math.abs(height));
+                    currentDrawing = new java.awt.geom.Ellipse2D.Float(
+                            x - (width < 0 ? diameter : 0),
+                            y - (height < 0 ? diameter : 0),
+                            diameter, diameter);
+                    break;
+                case "Oval":
+                    currentDrawing = new java.awt.geom.Ellipse2D.Float(
+                            x - (width < 0 ? -width : 0),
+                            y - (height < 0 ? -height : 0),
+                            Math.abs(width), Math.abs(height));
+                    break;
+                case "Rectangle":
+                    currentDrawing = new Rectangle(
+                            x - (width < 0 ? -width : 0),
+                            y - (height < 0 ? -height : 0),
+                            Math.abs(width), Math.abs(height));
+                    break;
+                case "Text":
+                    if (textBoxEnabled) {
+                        textBox.setLocation(e.getX(), e.getY());
+                        textBox.setVisible(true);
+                        textBox.requestFocus();
+                    }
+                    break;
+            }
+        }
+
+        // paintComponent is called when invoking repaint()
+        @Override
+        protected void paintComponent(Graphics board) {
+            // Ensure the original painting operations are executed
+            super.paintComponent(board);
+            Graphics2D board2D = (Graphics2D) board;
+
+            // Draw the all shapes and text boxes
+            for (int i = 0; i < shapes.size(); i++) {
+                board2D.setColor(colors.get(i));
+                if (shapes.get(i) instanceof Shape) {
+                    board2D.draw((Shape) shapes.get(i));
+                } else if (shapes.get(i) instanceof String) { // If it's text box
+                    board2D.drawString((String) shapes.get(i), (int) shapePositions.get(i).getX(), (int) shapePositions.get(i).getY());
+                }
+            }
+
+            // Draw the partial shapes
+            if (syncPartialDrawing != null) {
+                board2D.setColor(syncPartialColor);
+                board2D.draw(syncPartialDrawing);
+            }
+
+            // Display the current drawing shape
+            if (currentDrawing != null) {
+                board2D.setColor(currentColor);
+                board2D.draw(currentDrawing);
+            }
+        }
+
+//        private void drawToServer() {
+//            try {
+//                server.draw(client);
+//            } catch (RemoteException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//
+//        private void drawPartialToServer(Shape curDrawing, Color curColor, String curShape) {
+//            try {
+//                server.partialDraw(client, curDrawing, curColor, curShape);
+//            } catch (RemoteException e) {
+//                e.printStackTrace();
+//            }
+//        }
+
+        public void enableTextBox() {
+            textBoxEnabled = true;
+        }
+
+        // Text box will follow the mouse motion
+        @Override
+        protected void processMouseMotionEvent(MouseEvent e) {
+            super.processMouseMotionEvent(e);
+            if (textBoxEnabled) {
+                textBox.setLocation(e.getX(), e.getY());
+                textBox.setVisible(true);
+            }
+        }
+
+        public void setShape(String shape) {
+            currentShape = shape;
+        }
+
+        public void setColor(Color color) {
+            currentColor = color;
+        }
+
     }
 }

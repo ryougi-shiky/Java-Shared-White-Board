@@ -190,7 +190,7 @@ public class ClientGUI extends JFrame {
         private boolean textBoxEnabled = false;
 
         public whiteBoard() {
-            setPreferredSize(new Dimension(800, 600));
+            setPreferredSize(new Dimension(700, 600));
             setBackground(Color.WHITE);
 
             shapes = new ArrayList<>();
