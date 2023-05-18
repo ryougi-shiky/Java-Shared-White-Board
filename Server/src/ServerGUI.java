@@ -5,6 +5,11 @@ import java.awt.event.*;
 import java.rmi.RemoteException;
 import java.lang.NumberFormatException;
 
+import java.awt.image.BufferedImage;
+import java.util.*;
+import java.util.List;
+import java.awt.geom.*;
+
 public class ServerGUI {
     private static ServerInterface server;
     private static ClientInterface manager;
@@ -14,25 +19,18 @@ public class ServerGUI {
     private static int serverPortNumber;
     private static String managerName;
     private whiteBoard whiteBoard;
+    private static Color[] colors = {Color.BLACK, Color.BLUE, Color.CYAN, Color.DARK_GRAY, Color.GRAY, Color.GREEN,
+            Color.LIGHT_GRAY, Color.MAGENTA, Color.ORANGE, Color.PINK, Color.RED, Color.YELLOW,
+            new Color(147, 112, 219), new Color(50, 205, 50), new Color(0, 191, 255), new Color(139, 69, 19)};
 
     public ServerGUI() {
         frame = new JFrame("Shared Board White Server");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(900, 600);
+        frame.setSize(900, 650);
         frame.setLayout(new BorderLayout());
 
         // Add a "File" menu
-        JMenuBar menuBar = new JMenuBar();
-
-        JMenu fileMenu = new JMenu("File");
-        String[] files = {"Save", "Save As", "Open", "New", "Close"};
-        for (String file : files) {
-            JMenuItem fileOption = new JMenuItem(file);
-            fileOption.addActionListener(e -> fileSelect(file));
-            fileMenu.add(fileOption);
-        }
-        menuBar.add(fileMenu);
-        frame.setJMenuBar(menuBar);
+        TopBarMenu();
 
         frame.add(new JLabel(" Connected Clients List: "), BorderLayout.NORTH);
 
@@ -189,6 +187,53 @@ public class ServerGUI {
         JOptionPane.showMessageDialog(null, err, "Login Error", JOptionPane.ERROR_MESSAGE);
     }
 
+    private Image createColorIcon(Color color) {
+        BufferedImage colorIcon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_RGB);
+        Graphics2D board = colorIcon.createGraphics();
+        board.setColor(color);
+        board.fillRect(0, 0, 16, 16);
+        board.dispose();
+        return colorIcon;
+    }
+
+    private void TopBarMenu() {
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu fileMenu = new JMenu("File");
+        String[] files = {"Save", "Save As", "Open", "New", "Close"};
+        for (String file : files) {
+            JMenuItem fileOption = new JMenuItem(file);
+            fileOption.addActionListener(e -> fileSelect(file));
+            fileMenu.add(fileOption);
+        }
+        menuBar.add(fileMenu);
+
+        JMenu shapesMenu = new JMenu("Shapes");
+        String[] shapes = {"Line", "Circle", "Oval", "Rectangle"};
+        for (String shape : shapes) {
+            JMenuItem menuItem = new JMenuItem(shape);
+            menuItem.addActionListener(e -> whiteBoard.setShape(shape));
+            shapesMenu.add(menuItem);
+        }
+        menuBar.add(shapesMenu);
+
+        JMenu colorsMenu = new JMenu("Colors");
+        for (Color color : colors) {
+            JMenuItem menuItem = new JMenuItem(new ImageIcon(createColorIcon(color)));
+            menuItem.addActionListener(e -> whiteBoard.setColor(color));
+            colorsMenu.add(menuItem);
+        }
+        menuBar.add(colorsMenu);
+
+        JMenu textMenu = new JMenu("Text");
+        JMenuItem menuItem = new JMenuItem("Add Text Box");
+        menuItem.addActionListener(e -> whiteBoard.enableTextBox());
+        textMenu.add(menuItem);
+        menuBar.add(textMenu);
+
+        frame.setJMenuBar(menuBar);
+    }
+
     class whiteBoard extends JPanel {
         private Shape currentDrawing; // The shape is currently drawing. If null, currently not drawing.
         private Color currentColor = Color.BLACK;
@@ -196,9 +241,9 @@ public class ServerGUI {
         private int x, y; // Mouse position
         private int width, height; // Used for drawing shapes. Computed by mouse position
         // store drawn shapes , positions and corresponding colours
-        private java.util.ArrayList<Object> shapes;
-        private java.util.ArrayList<java.awt.Color> colors;
-        private java.util.ArrayList<java.awt.Point> shapePositions;
+        private ArrayList<Object> shapes;
+        private ArrayList<Color> colors;
+        private ArrayList<Point> shapePositions;
         // Temporarily draw partial shapes
         private Shape syncPartialDrawing;
         private Color syncPartialColor;
