@@ -6,8 +6,6 @@ import java.util.*;
 import java.util.List;
 import java.awt.geom.*;
 import java.rmi.RemoteException;
-import javax.imageio.ImageIO;
-import java.io.*;
 
 public class ClientGUI extends JFrame {
     private ClientInterface client;
@@ -17,6 +15,10 @@ public class ClientGUI extends JFrame {
             Color.LIGHT_GRAY, Color.MAGENTA, Color.ORANGE, Color.PINK, Color.RED, Color.YELLOW,
             new Color(147, 112, 219), new Color(50, 205, 50), new Color(0, 191, 255), new Color(139, 69, 19)};
     // The last four colours are Medium Purple, Lime Green, Deep Sky Blue, Saddle Brown
+
+    // List of other users currently editing the board
+    private DefaultListModel<String> clientsListModel;
+    private JList<String> clientsList;
 
     public ClientGUI(ServerInterface server, ClientInterface client) {
         this.server = server;
@@ -28,6 +30,8 @@ public class ClientGUI extends JFrame {
 
         TopBarMenu();
         drawBoard();
+        rightPanel();
+        bottomPanel();
 
         addWindowListener(new WindowAdapter() {
             @Override // Close window, disconnect the whiteboard
@@ -93,7 +97,7 @@ public class ClientGUI extends JFrame {
 
         JMenu textMenu = new JMenu("Text");
         JMenuItem menuItem = new JMenuItem("Add Text Box");
-        menuItem.addActionListener(e -> whiteBoard.createTextBox());
+        menuItem.addActionListener(e -> whiteBoard.enableTextBox());
         textMenu.add(menuItem);
         menuBar.add(textMenu);
 
@@ -114,6 +118,60 @@ public class ClientGUI extends JFrame {
         getContentPane().add(whiteBoard, BorderLayout.CENTER);
     }
 
+    private void rightPanel() {
+        clientsListModel = new DefaultListModel<>();
+        clientsList = new JList<>(clientsListModel);
+
+        JScrollPane userListScrollPane = new JScrollPane(clientsList);
+        userListScrollPane.setPreferredSize(new Dimension(200, 0));
+
+        JPanel userListPanel = new JPanel(new BorderLayout());
+        userListPanel.add(userListScrollPane, BorderLayout.CENTER);
+
+        // Create a new JPanel to hold the labels
+        JPanel labelPanel = new JPanel();
+        labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.Y_AXIS));  // Set to BoxLayout
+        try {
+            labelPanel.add(new JLabel("Manager Name: " + server.getManagerName()));
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        labelPanel.add(new JLabel("Online Clients"));
+
+
+        // Add the label panel to the NORTH area of the userListPanel
+        userListPanel.add(labelPanel, BorderLayout.NORTH);
+
+        add(userListPanel, BorderLayout.EAST);
+    }
+
+
+    private void bottomPanel() {
+        JPanel serverInfoPanel = new JPanel(new GridLayout(1, 1));
+        try {
+            serverInfoPanel.add(new JLabel(" Your name: " + client.getClientName()));
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        add(serverInfoPanel, BorderLayout.SOUTH);
+    }
+
+    public void updateClientsList(List<String> clientList) {
+        SwingUtilities.invokeLater(() -> {
+            DefaultListModel<String> listModel = new DefaultListModel<>();
+            for (String clientName : clientList) {
+                try { // Only show other online users
+                    if (!clientName.equals(client.getClientName())) {
+                        listModel.addElement(clientName);
+                    }
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+            clientsList.setModel(listModel);
+        });
+    }
+
     class whiteBoard extends JPanel {
         private Shape currentDrawing; // The shape is currently drawing. If null, currently not drawing.
         private Color currentColor = Color.BLACK;
@@ -132,7 +190,7 @@ public class ClientGUI extends JFrame {
         private boolean textBoxEnabled = false;
 
         public whiteBoard() {
-            setPreferredSize(new Dimension(900, 600));
+            setPreferredSize(new Dimension(700, 600));
             setBackground(Color.WHITE);
 
             shapes = new ArrayList<>();
@@ -142,7 +200,6 @@ public class ClientGUI extends JFrame {
             syncPartialDrawing = null;
             syncPartialColor = null;
             syncPartialShape = null;
-
 
             MouseAdapter mouseAdapter = new MouseAdapter() {
                 @Override
@@ -177,13 +234,16 @@ public class ClientGUI extends JFrame {
 
             textBox = new JTextField();
             textBox.setBounds(0, 0, 100, 20);
-            textBox.setVisible(false);
+            textBox.setVisible(false); // Hide text box until user need to use text box
             textBox.addActionListener(e -> {
-                textBox.setVisible(false);
+                textBox.setVisible(false); // Finish enter text, set text box back to invisible
                 textBoxEnabled = false;
+                // Calculate the baseline position for the text box
+                FontMetrics fm = textBox.getFontMetrics(textBox.getFont());
+
                 // Only store the text string and its position, not the text box object itself
                 shapes.add(textBox.getText());
-                shapePositions.add(new Point(textBox.getX(), textBox.getY() + textBox.getHeight()));
+                shapePositions.add(new Point(textBox.getX(), (textBox.getY() + fm.getAscent())));
                 colors.add(currentColor);
                 textBox.setText("");
                 repaint();
@@ -293,7 +353,7 @@ public class ClientGUI extends JFrame {
             }
         }
 
-        public void createTextBox() {
+        public void enableTextBox() {
             textBoxEnabled = true;
         }
 
@@ -314,6 +374,7 @@ public class ClientGUI extends JFrame {
         public void setColor(Color color) {
             currentColor = color;
         }
+
     }
 
     // Used to send current board status to the server
@@ -356,7 +417,8 @@ public class ClientGUI extends JFrame {
         dialog.getContentPane().add(new JLabel(" The server kicked you out."));
         dialog.getContentPane().add(new JLabel(" Please close the window and retry."));
         dialog.setVisible(true);
-        client = null; // Disconnect
+//        client = null; // Disconnect
+        server = null;
         System.out.println("client is kicked out");
 //        System.exit(0);
     }
@@ -381,32 +443,8 @@ public class ClientGUI extends JFrame {
         dialog.setSize(250, 100);
         dialog.setLocationRelativeTo(this);
         dialog.getContentPane().setLayout(new BoxLayout(dialog.getContentPane(), BoxLayout.Y_AXIS));
-        dialog.getContentPane().add(new JLabel(" The server cleared the board."));
-        dialog.getContentPane().add(new JLabel(" This is a new file now."));
+        dialog.getContentPane().add(new JLabel(" The server open or create a new board."));
+        dialog.getContentPane().add(new JLabel(" This is a new board now."));
         dialog.setVisible(true);
     }
-
-    public int getBoardWidth(){
-        return this.getWidth();
-    }
-
-    public int getBoardHeight(){
-        return this.getHeight();
-    }
-
-    public byte[] export() {
-        BufferedImage image = new BufferedImage(getBoardWidth(), getBoardHeight(), BufferedImage.TYPE_INT_RGB);
-        ByteArrayOutputStream output = new ByteArrayOutputStream(); // Serialise the image
-        Graphics2D g2d = image.createGraphics();
-        whiteBoard.paint(g2d);
-        g2d.dispose();
-        try {
-            ImageIO.write(image, "jpg", output);
-        } catch (IOException e) {
-            System.out.println("Error on converting image to byte array");
-            e.printStackTrace();
-        }
-        return output.toByteArray();
-    }
-
 }

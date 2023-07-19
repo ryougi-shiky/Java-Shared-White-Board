@@ -81,11 +81,12 @@ Phase 3 (Final):
 2. ^ Text inputting– allow user to type text anywhere inside the white board. Basic
 3. ^ At least 16 colours should be available. Basic
 4. ^ Type a unique username to join the whiteboard. Basic
-5. Show other user's name in the same board. Basic
+5. ^ Show other user's name in the same board. Basic
 6. ^ Connect and Disconnect at any time. Basic
 7. ^ Drawing together in real time. Basic
 8. Chat window. Advanced
 9. ^ All the clients will see the identical image of the whiteboard. Basic
+10. ^ Show other client's name. Basic
 
 
 # ServerGUI
@@ -94,3 +95,19 @@ Phase 3 (Final):
 3. ^ List all connected clients usernames. Basic
 4. ^ Close app, all clients get notified. Basic
 5. ^ Kick out a client. Advanced
+
+
+
+# Report
+1. System architecture
+2. Communication protocol
+3. message formats
+4. design diagrams (class and interaction)
+5. implementation details
+6. new innovations
+
+
+# Report Submission
+1. PDF only
+2. The executable jar files used to run your system’s clients/server(s)
+3. source files in a .ZIP or .TAR archive only.

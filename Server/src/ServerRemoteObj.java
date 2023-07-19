@@ -7,22 +7,21 @@ import java.util.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.*;
-import java.awt.image.*;
 
 import org.json.simple.parser.*;
 import org.json.simple.*;
 
-import javax.imageio.*;
 import java.io.*;
 
 public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterface {
     private ServerGUI serverGUI;
-    public List<String> clientList; //Name of clients
+    private String managerName;
+    public List<String> clientList; //Name of connected clients
     // White board status
     private ArrayList<Object> shapes;
     private ArrayList<Color> colors;
     private ArrayList<Point> shapePositions;
-    public List<ClientInterface> clients; // Clients objects
+    public List<ClientInterface> clients; // Connected clients objects
 
     public ServerRemoteObj(ServerGUI serverGUI) throws RemoteException {
         super();
@@ -34,13 +33,8 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
         shapePositions = new ArrayList<>();
     }
 
-    @Override
-    public String sayHello() throws RemoteException {
-        return "Hello from the remote object!";
-    }
-
     public synchronized int join(String clientName, ClientInterface client) {
-        if (clientList.contains(clientName)) {
+        if (clientList.contains(clientName) || clientName.equals(managerName)) {
             return 2; // Client name duplicate
         }
         // Waiting for server's approval to join
@@ -50,7 +44,6 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
             clientList.add(clientName);
             clients.add(client);
             try {
-                client.test();
                 client.setClientName(clientName);
             } catch (RemoteException e) {
                 e.printStackTrace();
@@ -71,14 +64,29 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
         return response == JOptionPane.YES_OPTION;
     }
 
+    public void setManagerName(String managerName){
+        this.managerName = managerName;
+    }
+    public String getManagerName(){
+        return this.managerName;
+    }
+
     public synchronized void syncBoardStatus(ClientInterface client) {
         try {
             for (ClientInterface restClient : clients) {
-                // Sync the board status to the rest clients
-                if (!restClient.getClientName().equals(client.getClientName())) {
+                if (client != null){
+                    // Sync the board status to the rest clients
+                    if (!restClient.getClientName().equals(client.getClientName())) {
+                        restClient.updateBoardStatus(shapes, colors, shapePositions);
+                        System.out.println(restClient.getClientName() + " sync");
+                    }
+                } else { // When server is drawing, client is null, sync to all clients
                     restClient.updateBoardStatus(shapes, colors, shapePositions);
                     System.out.println(restClient.getClientName() + " sync");
                 }
+            }
+            if (client != null){
+                serverGUI.updateBoardStatus(shapes, colors, shapePositions);
             }
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -98,27 +106,34 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
     }
 
     public synchronized void draw(ClientInterface client) {
-        List<List<?>> boardStatus = new ArrayList<>();
-        try {
-            boardStatus = client.getBoardStatus();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        shapes = new ArrayList<Object>(boardStatus.get(0));
-        colors = new ArrayList<Color>();
-        shapePositions = new ArrayList<Point>();
+        if (client == null){
+            shapes = serverGUI.whiteBoard.shapes;
+            colors = serverGUI.whiteBoard.colors;
+            shapePositions = serverGUI.whiteBoard.shapePositions;
+            System.out.println(managerName + " drew");
+        } else {
+            List<List<?>> boardStatus = new ArrayList<>();
+            try {
+                boardStatus = client.getBoardStatus();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+            shapes = new ArrayList<Object>(boardStatus.get(0));
+            colors = new ArrayList<Color>();
+            shapePositions = new ArrayList<Point>();
 
-        for (Object color : boardStatus.get(1)) {
-            colors.add((Color) color);
-        }
-        for (Object point : boardStatus.get(2)) {
-            shapePositions.add((Point) point);
-        }
-        try {
-            System.out.println(client.getClientName() + " drew");
+            for (Object color : boardStatus.get(1)) {
+                colors.add((Color) color);
+            }
+            for (Object point : boardStatus.get(2)) {
+                shapePositions.add((Point) point);
+            }
+            try {
+                System.out.println(client.getClientName() + " drew");
 
-        } catch (RemoteException e) {
-            e.printStackTrace();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
         }
         syncBoardStatus(client);
     }
@@ -126,11 +141,20 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
     public synchronized void partialDraw(ClientInterface client, Shape curDrawing, Color curColor, String curShape) {
         try {
             for (ClientInterface restClient : clients) {
-                // Sync the board status to the rest clients
-                if (!restClient.getClientName().equals(client.getClientName())) {
+                if (client != null){
+                    // Sync the board status to the rest clients
+                    if (!restClient.getClientName().equals(client.getClientName())) {
+                        restClient.updatePartialDraw(curDrawing, curColor, curShape);
+                        System.out.println(restClient.getClientName() + " sync partial draw");
+                    }
+                } else { // server partial draw
                     restClient.updatePartialDraw(curDrawing, curColor, curShape);
                     System.out.println(restClient.getClientName() + " sync partial draw");
                 }
+            }
+            // client partial draw will update to server GUI
+            if (client != null){
+                serverGUI.updatePartialDraw(curDrawing, curColor, curShape);
             }
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -154,6 +178,7 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
                 }
             }
         }
+        syncClientList();
     }
 
     public void closeServer() {
@@ -176,6 +201,8 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
             try {
                 if (client.getClientName().equals(clientName)) {
                     clientList.remove(client.getClientName());
+                    syncClientList(); // client.kicked() will wait until window close
+                    // So sync the new clientList first
                     serverGUI.removeClient(client.getClientName());
                     client.kicked();
                     iterator.remove(); // Safely remove the client from the list
@@ -187,34 +214,83 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
                 e.printStackTrace();
             }
         }
+        syncClientList();
         return false;
     }
 
-    private void save(File saveDir) {
-        if (saveDir == null) {
-            saveDir = new File("default_whiteboard_save.jpg");
-        }
-
-        byte[] imageBytes = null;
-        try {
-            imageBytes = clients.get(0).export();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-
-        if (imageBytes != null) {
+    public void syncClientList() {
+        for (ClientInterface client : clients) {
             try {
-                BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageBytes));
-                try {
-                    ImageIO.write(image, "jpg", saveDir);
-                    System.out.println("Image saved: " + saveDir.getAbsolutePath());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            } catch (IOException e) {
+                client.updateClientsList(clientList);
+                System.out.println("server syncing client list");
+            } catch (RemoteException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void save(File saveDir) {
+        if (saveDir == null) {
+            saveDir = new File("default_whiteboard_save.json");
+        }
+        try (FileWriter writer = new FileWriter(saveDir)) {
+            JSONObject data = new JSONObject();
+            JSONArray shapesJson = new JSONArray();
+            for (Object shape : shapes) {
+                JSONObject shapeJson = new JSONObject();
+                if (shape instanceof Line2D.Float) {
+                    Line2D.Float line = (Line2D.Float) shape;
+                    shapeJson.put("type", "line");
+                    shapeJson.put("x1", line.x1);
+                    shapeJson.put("y1", line.y1);
+                    shapeJson.put("x2", line.x2);
+                    shapeJson.put("y2", line.y2);
+                } else if (shape instanceof Ellipse2D.Float) {
+                    Ellipse2D.Float ellipse = (Ellipse2D.Float) shape;
+                    shapeJson.put("type", "ellipse");
+                    shapeJson.put("x", ellipse.x);
+                    shapeJson.put("y", ellipse.y);
+                    shapeJson.put("width", ellipse.width);
+                    shapeJson.put("height", ellipse.height);
+                } else if (shape instanceof Rectangle) {
+                    Rectangle rectangle = (Rectangle) shape;
+                    shapeJson.put("type", "rectangle");
+                    shapeJson.put("x", rectangle.x);
+                    shapeJson.put("y", rectangle.y);
+                    shapeJson.put("width", rectangle.width);
+                    shapeJson.put("height", rectangle.height);
+                } else if (shape instanceof String) {
+                    String text = (String) shape;
+                    Point position = shapePositions.get(shapes.indexOf(text));
+                    shapeJson.put("type", "text");
+                    shapeJson.put("text", text);
+                    shapeJson.put("x", position.getX());
+                    shapeJson.put("y", position.getY());
+                }
+                shapesJson.add(shapeJson);
+            }
+
+            JSONArray colorsJson = new JSONArray();
+            for (Color color : colors) {
+                colorsJson.add(color.getRGB());
+            }
+
+            JSONArray shapePositionsJson = new JSONArray();
+            for (Point position : shapePositions) {
+                JSONObject positionJson = new JSONObject();
+                positionJson.put("x", position.x);
+                positionJson.put("y", position.y);
+                shapePositionsJson.add(positionJson);
+            }
+
+            data.put("shapes", shapesJson);
+            data.put("colors", colorsJson);
+            data.put("shapePositions", shapePositionsJson);
+
+            writer.write(data.toJSONString());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -224,7 +300,7 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
         fileChooser.setDialogTitle("Save As");
 
         // Optional: Set a default file name and extension
-        fileChooser.setSelectedFile(new File("default_whiteboard_save.jpg"));
+        fileChooser.setSelectedFile(new File("default_whiteboard_save.json"));
 
         int result = fileChooser.showSaveDialog(null);
 
@@ -281,15 +357,21 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
                                 );
                                 shapes.add(ellipse);
                             } else if ("rectangle".equals(type)) {
-                                Rectangle2D.Float rectangle = new Rectangle2D.Float(
-                                        ((Number) shapeObj.get("x")).floatValue(),
-                                        ((Number) shapeObj.get("y")).floatValue(),
-                                        ((Number) shapeObj.get("width")).floatValue(),
-                                        ((Number) shapeObj.get("height")).floatValue()
+                                Rectangle rectangle = new Rectangle(
+                                        ((Number) shapeObj.get("x")).intValue(),
+                                        ((Number) shapeObj.get("y")).intValue(),
+                                        ((Number) shapeObj.get("width")).intValue(),
+                                        ((Number) shapeObj.get("height")).intValue()
                                 );
                                 shapes.add(rectangle);
+                            } else if ("text".equals(type)) {
+                                String text = (String) shapeObj.get("text");
+                                int x = ((Number) shapeObj.get("x")).intValue();
+                                int y = ((Number) shapeObj.get("y")).intValue();
+                                shapes.add(text);
+                                shapePositions.add(new Point(x, y));
                             } else {
-                                System.out.println("Unexpected shape type: " + shape.getClass().getName()); // Add debug statement
+                                System.out.println("Error on opening board.");
                             }
                         }
 
@@ -304,7 +386,9 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
                             shapePositions.add(new Point(x, y));
                         }
                     }
-                    System.out.println("Parsed from file");
+                    System.out.println("Parsed board from saved file");
+
+                    // Update saved board to all users
                     for (ClientInterface client : clients) {
                         try {
                             client.clear();
@@ -314,6 +398,8 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
                         }
                     }
                     System.out.println("update to client");
+                    serverGUI.updateBoardStatus(shapes, colors, shapePositions);
+                    System.out.println("Server board is updated");
                 } catch (IOException | ParseException e) {
                     e.printStackTrace();
                 }
@@ -346,6 +432,7 @@ public class ServerRemoteObj extends UnicastRemoteObject implements ServerInterf
                         e.printStackTrace();
                     }
                 }
+                serverGUI.clear();
                 break;
             case "Close":
                 closeServer();

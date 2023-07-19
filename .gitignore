@@ -36,3 +36,9 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+Client/META-INF/
+META-INF/
+Server/META-INF/
+out/
+
