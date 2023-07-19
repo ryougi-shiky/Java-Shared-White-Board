@@ -1,4 +1,5 @@
 # Shared White Board
+This application provide a shared white board that allow multiple users to draw simultaneously.
 - Admin user can create, save and open the white board.
 - General users can only draw on the white board, they can concurrently draw 4 shapes and add texts with 16 different colours.
 - Admin user has the same drawing functions as general users. Admin user can control whether to accept the new user connect in and kick out a user at any time.
