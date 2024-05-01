@@ -21,3 +21,45 @@ This application provide a shared white board that allow multiple users to draw 
 1. File -> Project Structure -> Project Settings -> Artifacts -> Add Jar -> Select module and main class with specified output directory
 2. Build Artifacts
 3. Run your .jar files
+
+## Run .jar
+
+Start a server:
+
+`java -jar Server.jar`
+
+Start a client:
+
+`java -jar Client.jar`
+
+
+# Demo
+
+### Start a server
+![start-server](img/start_server.png)
+
+Admin enter the room
+
+![admin-main](img/admin_main_page.png)
+
+### Start a client
+![start-client](img/start_client.png)
+
+Server received request
+
+![new-client](img/new_client_join.png)
+
+
+Client enter the room
+
+![connected](img/connected.png)
+
+
+### Drawing
+
+<video width="320" height="240" controls>
+  <source src="/img/drawing.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+[View video](img/drawing.mp4)
