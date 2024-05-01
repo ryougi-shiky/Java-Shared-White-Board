@@ -57,9 +57,4 @@ Client enter the room
 
 ### Drawing
 
-<video width="320" height="240" controls>
-  <source src="/img/drawing.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-
-[View video](img/drawing.mp4)
+![drawing](img/drawing.gif)
