@@ -43,7 +43,7 @@ public class RoomService {
         Room room = rooms.get(roomId);
         User user = users.get(username);
         if (!room.addUser(user)) {
-            return new Error(false, "Join room failed: failed to add user to the room")
+            return new Error(false, "Join room failed: failed to add user to the room");
         }
         return new Error(true, "Join room success");
     }

@@ -72,11 +72,11 @@ This application provide a shared white board that allow multiple users to draw 
 
 
 # How to run the programs
-## Run Project in IntelliJ IDEA
-1. Open this project in IDEA
-2. Mark `Client/src` and `Server/src` as Sources root
-3. Edit Configuration -> Add new configuration -> Application -> Select Java 17, correct Module directory and Main class.
-4. Run configurations
+## Run Server
+1. Make sure you are using Java 17
+2. Navigate to `server` directory
+3.`./mvnw spring-boot:run`
+3. 
 
 ## Build Project in IntelliJ IDEA
 1. File -> Project Structure -> Project Settings -> Artifacts -> Add Jar -> Select module and main class with specified output directory

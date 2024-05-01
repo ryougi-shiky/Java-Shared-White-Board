@@ -1,31 +1,57 @@
 package com.whiteboard.server.controller;
 
-@org.springframework.web.bind.annotation.RestController
-@org.springframework.web.bind.annotation.RequestMapping("/api")
+import com.whiteboard.server.model.Room;
+import com.whiteboard.server.model.User;
+import com.whiteboard.server.response.Error;
+import com.whiteboard.server.service.RoomService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api")
 public class RoomController {
-    @org.springframework.beans.factory.annotation.Autowired
-    private com.whiteboard.server.service.RoomService roomService;
 
-    @org.springframework.web.bind.annotation.PostMapping("/register")
-    public org.springframework.http.ResponseEntity<?> registerUser(@org.springframework.web.bind.annotation.RequestParam String username) {
+    @Autowired
+    private RoomService roomService;
+
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestParam String username) {
         try {
-            com.whiteboard.server.model.User user = roomService.registerUser(username);
-            return org.springframework.http.ResponseEntity.ok(user);
+            User user = roomService.registerUser(username);
+            return ResponseEntity.ok(user);
         } catch (Exception e) {
-            return org.springframework.http.ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(new Error(false, e.getMessage()));
         }
     }
 
-    @org.springframework.web.bind.annotation.PostMapping("/createRoom")
-    public org.springframework.http.ResponseEntity<?> createRoom(@org.springframework.web.bind.annotation.RequestParam String username) {
+    @PostMapping("/rooms/create")
+    public ResponseEntity<?> createRoom(@RequestParam String username) {
         try {
-            com.whiteboard.server.model.Room room = roomService.createRoom(username);
-            return org.springframework.http.ResponseEntity.ok(room);
+            Room room = roomService.createRoom(username);
+            return ResponseEntity.ok(room);
         } catch (Exception e) {
-            return org.springframework.http.ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(new Error(false, e.getMessage()));
         }
     }
 
-    // Add more endpoints as needed
+    @PostMapping("/rooms/join")
+    public ResponseEntity<Error> joinRoom(@RequestParam String roomId, @RequestParam String username) {
+        Error result = roomService.joinRoom(roomId, username);
+        if (result.isSuccess()) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+
+    @PostMapping("/rooms/leave")
+    public ResponseEntity<Error> leaveRoom(@RequestParam String roomId, @RequestParam String username) {
+        Error result = roomService.leaveRoom(roomId, username);
+        if (result.isSuccess()) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
 }
-
