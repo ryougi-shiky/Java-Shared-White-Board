@@ -54,7 +54,15 @@ Client enter the room
 
 ![connected](img/connected.png)
 
+### Kickout
+
+Right click the client
+
+![kickout-window](img/kickout-window.png)
+
+![kickout-notification](img/kickout-notification.png)
 
 ### Drawing
 
 ![drawing](img/drawing.gif)
+
