@@ -78,6 +78,9 @@ This application provide a shared white board that allow multiple users to draw 
 3. `./mvnw spring-boot:run`
 4. You can use `./mvnw clean install` to check compilation errors
 
+## Run in Docker
+- `docker run -e SECURITY_USER_NAME=admin -e SECURITY_USER_PASSWORD=admin -p 8080:8080 your-app-image`
+
 ## Build Project in IntelliJ IDEA
 1. File -> Project Structure -> Project Settings -> Artifacts -> Add Jar -> Select module and main class with specified output directory
 2. Build Artifacts
