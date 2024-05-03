@@ -3,7 +3,8 @@ name: Server Build and Docker Push
 on:
   push:
     branches:
-      - "*"
+      - main
+      - refactor-flutter-spring
     paths:
       - "server/**"
 
