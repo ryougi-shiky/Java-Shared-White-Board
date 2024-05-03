@@ -23,6 +23,7 @@ jobs:
 
       - name: Build with Maven
         run: |
+          ls
           cd server
           ./mvnw clean package
 
