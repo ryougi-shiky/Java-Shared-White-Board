@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_config/flutter_config.dart';
 import 'package:http/http.dart' as http;
@@ -15,7 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> registerUser() async {
     var serverUrl = FlutterConfig.get('SERVER_URL') ?? "http://defaultserver/api";
-    var url = Uri.parse('$serverUrl/register?username=${_usernameController.text}');
+    var url = Uri.parse('$serverUrl/api/register?username=${_usernameController.text}');
     
     try {
       var response = await http.post(url);
@@ -30,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
         showErrorDialog(errorData['message'] ?? 'Registration failed');
       }
     } catch (e) {
-      // Handle any errors here
+      print('Exception caught: $e');
       showErrorDialog('Failed to connect to the server.');
     }
   }

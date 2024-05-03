@@ -60,9 +60,9 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
-        resValue "string", "SERVER_IP", project.env.get("SERVER_IP")
-        resValue "string", "SERVER_PORT", project.env.get("SERVER_PORT")
-        resValue "string", "SERVER_URL", project.env.get("SERVER_URL")
+        resValue "string", "SERVER_IP", System.getenv("SERVER_IP") ?: "default_ip"
+        resValue "string", "SERVER_PORT", System.getenv("SERVER_PORT") ?: "default_port"
+        resValue "string", "SERVER_URL", System.getenv("SERVER_URL") ?: "http://default_url"
     }
 
     signingConfigs {
