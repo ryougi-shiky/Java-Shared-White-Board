@@ -25,6 +25,8 @@ jobs:
         run: |
           ls
           cd server
+          export SECURITY_USER_NAME=${{ secrets.SECURITY_USER_NAME }}
+          export SECURITY_USER_PASSWORD=${{ secrets.SECURITY_USER_PASSWORD }}
           ./mvnw clean package
 
       - name: Log in to Docker Hub
