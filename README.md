@@ -127,3 +127,7 @@ Right click the client
 
 ![drawing](img/drawing.gif)
 
+
+# Build Flutter Project into APK
+- Download Flutter SDK
+- https://docs.flutter.dev/deployment/android
