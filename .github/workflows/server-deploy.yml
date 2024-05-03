@@ -25,7 +25,6 @@ jobs:
         run: |
           ls
           cd server
-          ./mvnw clean install
           ./mvnw clean package
 
       - name: Log in to Docker Hub
