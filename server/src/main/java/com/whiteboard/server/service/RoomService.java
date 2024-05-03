@@ -5,7 +5,10 @@ import com.whiteboard.server.model.Room;
 import com.whiteboard.server.response.Error;
 
 import java.util.concurrent.*;
-import java.util.UUID.*;
+import java.util.UUID;
+import java.util.List;
+import java.util.ArrayList;
+
 @org.springframework.stereotype.Service
 public class RoomService {
     private ConcurrentHashMap<String, Room> rooms = new ConcurrentHashMap<>();
@@ -24,7 +27,7 @@ public class RoomService {
         if (!users.containsKey(username)) {
             throw new Exception("User does not exist");
         }
-        String roomId = java.util.UUID.randomUUID().toString();
+        String roomId = UUID.randomUUID().toString();
         User user = users.get(username);
         Room room = new Room(roomId, user);
 
