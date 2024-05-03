@@ -33,6 +33,12 @@ public class RoomService {
         return room;
     }
 
+    public List<Room> getAllRooms() {
+        // This should return the list of all rooms.
+        // Here you would typically interact with your database or in-memory data store
+        return new ArrayList<>(rooms.values());
+    }    
+
     public Error joinRoom(String roomId, String username) {
         if (!rooms.containsKey(roomId)) {
             return new Error(false,"Join room failed: Room not found");

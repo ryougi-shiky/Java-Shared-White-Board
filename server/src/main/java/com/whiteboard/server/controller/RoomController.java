@@ -70,4 +70,16 @@ public class RoomController {
             return ResponseEntity.badRequest().body(result);
         }
     }
+
+    @GetMapping("/listrooms")
+    public ResponseEntity<List<Room>> getAllRooms() {
+        try {
+            List<Room> allRooms = roomService.getAllRooms();
+            return ResponseEntity.ok(allRooms);
+        } catch (Exception e) {
+            logger.error("Failed to fetch rooms: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }
