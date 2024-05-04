@@ -1,10 +1,14 @@
 package com.whiteboard.server.model;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class Room {
     private String id;
     private User owner;
-    private java.util.Set<User> participants = new java.util.HashSet<>();
-    private java.util.Map<String, Object> boardData = new java.util.concurrent.ConcurrentHashMap<>();
+    private .Set<User> participants = new HashSet<>();
+    private Map<String, Object> boardData = new concurrent.ConcurrentHashMap<>();
 
     public Room(String id, User owner) {
         this.id = id;
