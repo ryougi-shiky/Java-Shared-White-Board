@@ -7,8 +7,8 @@ public class Room {
     private java.util.Map<String, Object> boardData = new java.util.concurrent.ConcurrentHashMap<>();
 
     public Room(String id, User owner) {
-        this.owner = owner;
         this.id = id;
+        this.owner = owner;
     }
     // Constructors, getters, and setters
     public boolean addUser(User user) {
@@ -24,5 +24,17 @@ public class Room {
 
     public String getOwnerName() {
         return this.owner.getUsername();
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public Set<User> getParticipants() {
+        return new HashSet<>(participants);  // Return a copy to avoid modification outside
+    }
+
+    public Map<String, Object> getBoardData() {
+        return new HashMap<>(boardData);
     }
 }
