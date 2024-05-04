@@ -79,7 +79,7 @@ public class RoomController {
     public ResponseEntity<List<Room>> getAllRooms() {
         try {
             List<Room> allRooms = roomService.getAllRooms();
-            logger.info("Fetching all rooms");
+            logger.info("Fetching all rooms: {}", allRooms);
             return ResponseEntity.ok(allRooms);
         } catch (Exception e) {
             logger.error("Failed to fetch rooms: {}", e.getMessage());
