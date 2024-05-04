@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_config/flutter_config.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -16,11 +16,26 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
 
   Future<void> registerUser() async {
-    var serverUrl = FlutterConfig.get('SERVER_URL') ?? "http://defaultserver/api";
-    var url = Uri.parse('$serverUrl/api/register?username=${_usernameController.text}');
-    
+    var authUser = dotenv.env['USER'] ?? "admin";
+    var authPwd = dotenv.env['PASSWORD'] ?? "admin";
+    var serverUrl = dotenv.env['SERVER_URL'] ?? "http://defaultserver/api";
+    var url = Uri.parse(
+        '$serverUrl/api/register?username=${_usernameController.text}');
+
+    String basicAuth =
+        'Basic ' + base64Encode(utf8.encode('$authUser:$authPwd'));
+
     try {
-      var response = await http.post(url);
+      var response = await http.post(
+        url,
+        headers: <String, String>{
+          'authorization': basicAuth,
+        },
+      );
+
+      // 打印响应状态码和响应体
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         // If registration is successful, navigate to the next screen

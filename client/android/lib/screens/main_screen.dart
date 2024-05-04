@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_config/flutter_config.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -22,7 +22,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void fetchRooms() async {
-    var serverUrl = FlutterConfig.get('SERVER_URL') ?? "http://defaultserver";
+    var serverUrl = dotenv.env['SERVER_URL'] ?? "http://defaultserver";
     var url = Uri.parse('$serverUrl/api/listrooms');
     try {
       var response = await http.get(url);
