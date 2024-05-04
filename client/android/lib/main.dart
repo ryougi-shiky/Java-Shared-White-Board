@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_config/flutter_config.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'package:android/screens/main_screen.dart';
 
 // import 'splash_screen.dart'; // Ensure this is the correct path to your splash_screen.dart
 import 'package:android/screens/login_screen.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  // WidgetsFlutterBinding.ensureInitialized();
   // Load the environment variables
-  await FlutterConfig.loadEnvVariables();
+  await dotenv.load(fileName: ".env");
+  print('Server URL: ${dotenv.env['SERVER_URL']}');
   runApp(const MyApp());
 }
 
@@ -23,6 +26,9 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: LoginScreen(), // Set the initial route
+      routes: {
+        '/mainScreen': (context) => MainScreen(username: ModalRoute.of(context)!.settings.arguments as String),
+      },
     );
   }
 }
