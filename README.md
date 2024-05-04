@@ -76,7 +76,8 @@ This application provide a shared white board that allow multiple users to draw 
 1. Make sure you are using Java 17
 2. Navigate to `server` directory
 3. `./mvnw spring-boot:run`
-4. You can use `./mvnw clean install` to check compilation errors
+4. `export SECURITY_USER_NAME=admin && export SECURITY_USER_PASSWORD=admin`
+5. You can use `./mvnw clean install` to check compilation errors
 
 ## Run in Docker
 - `docker run -e SECURITY_USER_NAME=admin -e SECURITY_USER_PASSWORD=admin -p 8080:8080 your-app-image`
