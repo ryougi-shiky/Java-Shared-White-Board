@@ -49,7 +49,7 @@ public class RoomService {
         Room room = rooms.get(roomId);
 
         if (!users.containsKey(username)) {
-            return new Error(false,"Join room failed: User not found");
+            return new Error(false,"Join room failed: User not exists");
         }
         User user = users.get(username);
 
@@ -69,16 +69,14 @@ public class RoomService {
         if (!rooms.containsKey(roomId)) {
             return new Error(false,"Leave room failed: Room not found");
         }
-        if (!users.containsKey(username)) {
-            return new Error(false,"Leave room failed: User not found");
-        }
-
         Room room = rooms.get(roomId);
-        User user = users.get(username);
 
-        if (!room.removeUser(user)) {
-            return new Error(false,"Leave room failed: failed to remove user from the room");
+        if (!users.containsKey(username)) {
+            return new Error(false,"Leave room failed: User not exists");
         }
+        User user = users.get(username);
+        
+        room.removeUser(user);
         return new Error(true, "Leave room success");
     }
 

@@ -21,8 +21,8 @@ public class Room {
         participants.add(user);
     }
 
-    public boolean removeUser(User user) {
-        return participants.remove(user);
+    public void removeUser(User user) {
+        participants.remove(user);
     }
     public String getId() {
         return this.id;
