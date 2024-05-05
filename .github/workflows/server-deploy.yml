@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - "*"
-    # paths:
-    #   - "server/**"
+    paths:
+      - "server/**"
 
 jobs:
   build:

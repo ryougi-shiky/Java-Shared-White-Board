@@ -18,9 +18,9 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> registerUser() async {
     var authUser = dotenv.env['USER'] ?? "admin";
     var authPwd = dotenv.env['PASSWORD'] ?? "admin";
-    var serverUrl = dotenv.env['SERVER_URL'] ?? "http://defaultserver/api";
+    var serverUrl = dotenv.env['SERVER_URL'] ?? "http://defaultserver/";
     var url = Uri.parse(
-        '$serverUrl/api/register?username=${_usernameController.text}');
+        '$serverUrl/register?username=${_usernameController.text}');
 
     String basicAuth =
         'Basic ' + base64Encode(utf8.encode('$authUser:$authPwd'));
@@ -71,9 +71,9 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Enter Your Username'),
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Enter Your Username'),
+      // ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

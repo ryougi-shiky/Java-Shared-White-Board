@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import java.util.List; 
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/")
 public class RoomController {
 
     private static final Logger logger = LoggerFactory.getLogger(RoomController.class);

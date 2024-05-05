@@ -25,7 +25,7 @@ class _MainScreenState extends State<MainScreen> {
 
   void fetchRooms() async {
     var serverUrl = dotenv.env['SERVER_URL'] ?? "http://defaultserver";
-    var url = Uri.parse('$serverUrl/api/listrooms');
+    var url = Uri.parse('$serverUrl/listrooms');
 
     var authUser = dotenv.env['USER'] ?? "admin";
     var authPwd = dotenv.env['PASSWORD'] ?? "admin";
@@ -113,7 +113,7 @@ class _MainScreenState extends State<MainScreen> {
   void createRoom() async {
     var serverUrl = dotenv.env['SERVER_URL'] ?? "http://defaultserver";
     var url =
-        Uri.parse('$serverUrl/api/rooms/create?username=${widget.username}');
+        Uri.parse('$serverUrl/rooms/create?username=${widget.username}');
     var authUser = dotenv.env['USER'] ?? "admin";
     var authPwd = dotenv.env['PASSWORD'] ?? "admin";
     String basicAuth =
