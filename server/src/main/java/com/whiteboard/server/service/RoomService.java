@@ -58,9 +58,10 @@ public class RoomService {
         //     return new Error(false,"Join room failed: Username duplicate");
         // }
 
-        if (!room.addUser(user)) {
-            return new Error(false, "Join room failed: failed to add user to the room");
-        }
+        // if (!room.addUser(user)) {
+        //     return new Error(false, "Join room failed: failed to add user to the room");
+        // }
+        room.addUser(user)
         return new Error(true, "Join room success");
     }
 

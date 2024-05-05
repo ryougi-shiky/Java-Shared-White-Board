@@ -17,8 +17,8 @@ public class Room {
         this.owner = owner;
     }
     // Constructors, getters, and setters
-    public boolean addUser(User user) {
-        return participants.add(user);
+    public void addUser(User user) {
+        participants.add(user);
     }
 
     public boolean removeUser(User user) {
