@@ -48,7 +48,7 @@ public class RoomService {
         }
         Room room = rooms.get(roomId);
 
-        if (users.containsKey(username)) {
+        if (!users.containsKey(username)) {
             return new Error(false,"Join room failed: User not found");
         }
         User user = users.get(username);
