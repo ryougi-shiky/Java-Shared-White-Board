@@ -28,7 +28,8 @@ public class RoomController {
         logger.info("Registering user with username: {}", username);
         try {
             User user = roomService.registerUser(username);
-            logger.info("Registration successful for username: {}", username);
+            logger.info("Registration successful for username: '{}'", username);
+            logger.info("Current users: '{}'", roomService.getAllUsers());
             return ResponseEntity.ok(user);
         } catch (Exception e) {
             logger.error("Registration failed for username: {}. Error: {}", username, e.getMessage());
@@ -58,6 +59,7 @@ public class RoomController {
             return ResponseEntity.ok(result);
         } else {
             logger.error("Join room failed for username: {} in room: {}. Error: {}", username, roomId, result.getMessage());
+            logger.info("Current users: '{}'", roomService.getAllUsers());
             return ResponseEntity.badRequest().body(result);
         }
     }
@@ -95,6 +97,7 @@ public class RoomController {
             return ResponseEntity.ok(participants);
         } catch (Exception e) {
             logger.error("Failed to get room's participants: {}", e.getMessage());
+            logger.info("Current users: '{}'", roomService.getAllUsers());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

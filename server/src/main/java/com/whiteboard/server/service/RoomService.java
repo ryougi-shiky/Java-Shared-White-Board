@@ -91,5 +91,9 @@ public class RoomService {
         }
         return new ArrayList<>(room.getParticipants());
     }
+
+    public List<User> getAllUsers(String roomId) {
+        return new ArrayList<>(users.values());
+    }
 }
 
