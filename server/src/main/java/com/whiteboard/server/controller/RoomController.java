@@ -87,4 +87,15 @@ public class RoomController {
         }
     }
 
+    @GetMapping("/rooms/getparticipants")
+    public ResponseEntity<List<User>> getParticipants(@RequestParam String roomId) {
+        try {
+            List<User> participants = roomService.getParticipants(roomId);
+            logger.info("Fetching participants: {}", participants);
+            return ResponseEntity.ok(participants);
+        } catch (Exception e) {
+            logger.error("Failed to get room's participants: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

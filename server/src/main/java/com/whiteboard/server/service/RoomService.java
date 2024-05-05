@@ -73,5 +73,16 @@ public class RoomService {
         }
         return new Error(true, "Leave room success");
     }
+
+    public List<User> getParticipants(String roomId) {
+        if (!rooms.containsKey(roomId)) {
+            throw new IllegalArgumentException("Get room participants failed: Room not found");
+        }
+        Room room = rooms.get(roomId);
+        if (room == null) {
+            throw new IllegalArgumentException("Get room participants failed: Room found but null");
+        }
+        return new ArrayList<>(room.getParticipants());
+    }
 }
 
