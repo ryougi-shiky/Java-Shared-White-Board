@@ -92,7 +92,7 @@ public class RoomService {
         return new ArrayList<>(room.getParticipants());
     }
 
-    public List<User> getAllUsers(String roomId) {
+    public List<User> getAllUsers() {
         return new ArrayList<>(users.values());
     }
 }
