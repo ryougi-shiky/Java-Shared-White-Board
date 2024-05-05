@@ -54,9 +54,9 @@ public class RoomService {
         User user = users.get(username);
 
         // Check if the user is already a participant of the room
-        if (room.getParticipants().contains(user)) {
-            return new Error(false,"Join room failed: Username duplicate");
-        }
+        // if (room.getParticipants().contains(user)) {
+        //     return new Error(false,"Join room failed: Username duplicate");
+        // }
 
         if (!room.addUser(user)) {
             return new Error(false, "Join room failed: failed to add user to the room");
