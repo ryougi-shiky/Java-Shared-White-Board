@@ -46,11 +46,18 @@ public class RoomService {
         if (!rooms.containsKey(roomId)) {
             return new Error(false,"Join room failed: Room not found");
         }
+        Room room = rooms.get(roomId);
+
         if (users.containsKey(username)) {
+            return new Error(false,"Join room failed: User not found");
+        }
+        User user = users.get(username);
+
+        // Check if the user is already a participant of the room
+        if (room.getParticipants().contains(user)) {
             return new Error(false,"Join room failed: Username duplicate");
         }
-        Room room = rooms.get(roomId);
-        User user = users.get(username);
+
         if (!room.addUser(user)) {
             return new Error(false, "Join room failed: failed to add user to the room");
         }
