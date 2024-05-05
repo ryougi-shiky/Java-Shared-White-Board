@@ -1,9 +1,9 @@
-import 'package:android/models/room.dart';
-
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:android/models/room.dart'; // 确保你的 Room 模型已正确定义并可用
+import 'room_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final String username;
@@ -15,7 +15,8 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  List<dynamic> rooms = [];
+  List<Room> rooms = [];
+  Room? selectedRoom;
 
   @override
   void initState() {
@@ -33,20 +34,16 @@ class _MainScreenState extends State<MainScreen> {
         'Basic ' + base64Encode(utf8.encode('$authUser:$authPwd'));
 
     try {
-      var response = await http
-          .get(url, headers: <String, String>{'authorization': basicAuth});
+      var response = await http.get(
+        url,
+        headers: <String, String>{'authorization': basicAuth},
+      );
       if (response.statusCode == 200) {
-        var jsonData = jsonDecode(response.body);
-        if (jsonData != null) {
-          var roomsData = jsonData as List;
-          setState(() {
-            rooms = roomsData.map((data) => Room.fromJson(data)).toList();
-          });
-        } else {
-          setState(() {
-            rooms = [];
-          });
-        }
+        setState(() {
+          rooms = (jsonDecode(response.body) as List)
+              .map((data) => Room.fromJson(data))
+              .toList();
+        });
       } else {
         throw Exception('Failed to load rooms');
       }
@@ -75,14 +72,24 @@ class _MainScreenState extends State<MainScreen> {
             child: ListView.builder(
               itemCount: rooms.length,
               itemBuilder: (context, index) {
-                Room room = rooms[index];
-                String username =
-                    room.owner.username; // 直接访问 Room 对象的 owner 属性的 username
-                return ListTile(
-                  title: Text(username),
-                  onTap: () {
-                    // Join the room
-                  },
+                bool isSelected = selectedRoom == rooms[index];
+
+                return Container(
+                  // color: index % 2 == 0 ? Colors.grey[300] : Colors.white, // 交替颜色
+                  color: isSelected
+                      ? Colors.blue[100]
+                      : (index % 2 == 0
+                          ? Colors.grey[300]
+                          : Colors.white), // 选中时改变背景色
+
+                  child: ListTile(
+                    title: Text(rooms[index].owner.username),
+                    onTap: () {
+                      setState(() {
+                        selectedRoom = rooms[index]; // 更新选中的房间
+                      });
+                    },
+                  ),
                 );
               },
             ),
@@ -97,9 +104,7 @@ class _MainScreenState extends State<MainScreen> {
                   child: const Text('Create Room'),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    // 假设你有一个方法来加入房间
-                  },
+                  onPressed: joinRoom,
                   child: const Text('Join a Room'),
                 ),
               ],
@@ -112,8 +117,7 @@ class _MainScreenState extends State<MainScreen> {
 
   void createRoom() async {
     var serverUrl = dotenv.env['SERVER_URL'] ?? "http://defaultserver";
-    var url =
-        Uri.parse('$serverUrl/rooms/create?username=${widget.username}');
+    var url = Uri.parse('$serverUrl/rooms/create?username=${widget.username}');
     var authUser = dotenv.env['USER'] ?? "admin";
     var authPwd = dotenv.env['PASSWORD'] ?? "admin";
     String basicAuth =
@@ -122,9 +126,7 @@ class _MainScreenState extends State<MainScreen> {
     try {
       var response = await http.post(
         url,
-        headers: <String, String>{
-          'authorization': basicAuth,
-        },
+        headers: <String, String>{'authorization': basicAuth},
       );
       if (response.statusCode == 200) {
         fetchRooms(); // 刷新列表以显示创建的房间
@@ -133,6 +135,41 @@ class _MainScreenState extends State<MainScreen> {
       }
     } catch (e) {
       print('Error creating room: $e');
+    }
+  }
+
+  void joinRoom() async {
+    var serverUrl = dotenv.env['SERVER_URL'] ?? "http://defaultserver";
+    var url = Uri.parse('$serverUrl/rooms/join?roomId=${selectedRoom?.id}&username=${widget.username}');
+    var authUser = dotenv.env['USER'] ?? "admin";
+    var authPwd = dotenv.env['PASSWORD'] ?? "admin";
+    String basicAuth =
+        'Basic ' + base64Encode(utf8.encode('$authUser:$authPwd'));
+
+    if (selectedRoom != null) {
+      print('Joining room: ${selectedRoom!.id}'); // 打印房间 ID，或进行页面跳转
+      // 你可以在这里添加逻辑来处理加入房间的请求
+      try {
+        var response = await http.post(
+          url,
+          headers: <String, String>{'authorization': basicAuth},
+        );
+        if (response.statusCode == 200) {
+          fetchRooms(); // 刷新列表以显示创建的房间
+        } else {
+          print('Failed to join room: ${response.body}');
+        }
+      } catch (e) {
+        print('Error joining room: $e');
+      }
+
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => RoomScreen(room: selectedRoom!)));
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('No room selected')));
     }
   }
 }
