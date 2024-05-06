@@ -7,8 +7,10 @@ import 'package:android/models/user.dart'; // 确保 User 模型已正确定义
 
 class RoomScreen extends StatefulWidget {
   final Room room;
+  final String username; // 添加用户名字段
 
-  const RoomScreen({Key? key, required this.room}) : super(key: key);
+  const RoomScreen({Key? key, required this.room, required this.username})
+      : super(key: key);
 
   @override
   _RoomScreenState createState() => _RoomScreenState();
@@ -138,9 +140,35 @@ class _RoomScreenState extends State<RoomScreen> {
     }
   }
 
-  void _leaveRoom(BuildContext context) {
-    // 添加退出房间的逻辑
-    Navigator.pop(context);
+  void _leaveRoom(BuildContext context) async {
+    var serverUrl = dotenv.env['SERVER_URL'] ?? "http://defaultserver";
+    var url = Uri.parse(
+        '$serverUrl/rooms/leave?roomId=${widget.room.id}&username=${widget.username}');
+
+    var authUser = dotenv.env['USER'] ?? "admin";
+    var authPwd = dotenv.env['PASSWORD'] ?? "admin";
+    String basicAuth =
+        'Basic ' + base64Encode(utf8.encode('$authUser:$authPwd'));
+
+    try {
+      var response = await http
+          .post(url, headers: <String, String>{'authorization': basicAuth});
+
+      if (response.statusCode == 200) {
+        Navigator.pop(context); // 成功退出后返回上一页
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('You have successfully left the room')));
+      } else {
+        print('Failed to leave room with status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        throw Exception(
+            'Failed to leave room with status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Failed to leave room: $e')));
+    }
   }
 
   void _selectTool(String tool) {

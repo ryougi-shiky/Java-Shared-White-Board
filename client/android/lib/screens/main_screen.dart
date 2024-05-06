@@ -140,7 +140,8 @@ class _MainScreenState extends State<MainScreen> {
 
   void joinRoom() async {
     var serverUrl = dotenv.env['SERVER_URL'] ?? "http://defaultserver";
-    var url = Uri.parse('$serverUrl/rooms/join?roomId=${selectedRoom?.id}&username=${widget.username}');
+    var url = Uri.parse(
+        '$serverUrl/rooms/join?roomId=${selectedRoom?.id}&username=${widget.username}');
     var authUser = dotenv.env['USER'] ?? "admin";
     var authPwd = dotenv.env['PASSWORD'] ?? "admin";
     String basicAuth =
@@ -166,7 +167,8 @@ class _MainScreenState extends State<MainScreen> {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => RoomScreen(room: selectedRoom!)));
+              builder: (context) =>
+                  RoomScreen(room: selectedRoom!, username: widget.username)));
     } else {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('No room selected')));
