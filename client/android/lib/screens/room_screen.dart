@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:android/models/room.dart'; // 确保 Room 模型已正确定义
 import 'package:android/models/user.dart'; // 确保 User 模型已正确定义
+import 'package:android/widgets/painter.dart';
 
 class RoomScreen extends StatefulWidget {
   final Room room;
@@ -20,6 +21,7 @@ class _RoomScreenState extends State<RoomScreen> {
   List<User> participants = [];
   Color selectedColor = Colors.black;
   String selectedTool = 'pen';
+  List<Offset?> points = [];
 
   @override
   void initState() {
@@ -78,14 +80,15 @@ class _RoomScreenState extends State<RoomScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Center(
-              child: Text('这里将是画板区域'), // 这里应该是画板的 Widget
-            ),
-          ),
-        ],
+      body: Painter(
+        points: points,
+        color: selectedColor,
+        onNewPoints: (newPoints) {
+          setState(() {
+            points = newPoints;
+            // 这里可以添加发送到服务器的代码，以同步新的画线
+          });
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _leaveRoom(context),
