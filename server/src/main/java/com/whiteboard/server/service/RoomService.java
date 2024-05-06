@@ -16,7 +16,7 @@ public class RoomService {
 
     public User registerUser(String username) throws Exception {
         if (users.containsKey(username)) {
-            throw new Exception("Username already exists");
+            return users.get(username);
         }
         User user = new User(username);
         users.put(username, user);
