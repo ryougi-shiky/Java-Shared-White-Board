@@ -12,9 +12,7 @@ class DrawingPainter extends CustomPainter {
       shape.paint.strokeCap = StrokeCap.round;
       if (shape is DrawingLine) {
         for (int i = 0; i < shape.points.length - 1; i++) {
-          if (shape.points[i] != null && shape.points[i + 1] != null) {
-            canvas.drawLine(shape.points[i]!, shape.points[i + 1]!, shape.paint);
-          }
+          canvas.drawLine(shape.points[i], shape.points[i + 1], shape.paint);
         }
       } else if (shape is DrawingRectangle) {
         Rect rect = Rect.fromPoints(shape.startPoint, shape.endPoint);
