@@ -3,6 +3,10 @@ import 'package:android/models/draw_shape.dart';
 
 class DrawingPainter extends CustomPainter {
   final List<DrawingShape> shapes;
+  final TextPainter textPainter = TextPainter(
+    textAlign: TextAlign.left,
+    textDirection: TextDirection.ltr,
+  );
 
   DrawingPainter(this.shapes);
 
@@ -20,10 +24,12 @@ class DrawingPainter extends CustomPainter {
       } else if (shape is DrawingCircle) {
         canvas.drawCircle(shape.center, shape.radius, shape.paint);
       } else if (shape is DrawingText) {
-        TextSpan span = TextSpan(style: TextStyle(color: shape.paint.color), text: shape.text);
-        TextPainter tp = TextPainter(text: span, textAlign: TextAlign.left, textDirection: TextDirection.ltr);
-        tp.layout();
-        tp.paint(canvas, shape.position);
+        DrawingText textShape = shape as DrawingText;
+        textPainter.text = TextSpan(
+            style: TextStyle(color: textShape.paint.color),
+            text: textShape.text);
+        textPainter.layout();
+        textPainter.paint(canvas, textShape.position);
       }
     }
   }

@@ -23,7 +23,8 @@ class _RoomScreenState extends State<RoomScreen> {
   Color selectedColor = Colors.black;
   String selectedTool = 'pen';
   List<DrawingShape> shapes = []; // Initialize an empty list of shapes
-  double strokeWidth = 3.0;
+  bool isWaitingForTextPosition = false;
+  Offset? textPosition;
 
   @override
   void initState() {
@@ -101,6 +102,14 @@ class _RoomScreenState extends State<RoomScreen> {
         tooltip: 'Leave Room',
       ),
     );
+  }
+
+  void _insertTextAtPosition(String text, Offset position) {
+    Paint paint = Paint()
+      ..color = selectedColor
+      ..strokeWidth = 3.0;
+    DrawingShape newText = DrawingText(text, position, paint);
+    updateShapes([...shapes, newText]);
   }
 
   void _showToolOptions(BuildContext context) {
@@ -191,10 +200,56 @@ class _RoomScreenState extends State<RoomScreen> {
   }
 
   void _selectTool(String tool) {
-    setState(() {
-      selectedTool = tool;
-    });
+    print('Tool selected: $tool'); // Debug: Check which tool is selected
+
+    if (tool == 'text') {
+      setState(() {
+        selectedTool = tool;
+        isWaitingForTextPosition = true; // 设置等待文本位置状态
+      });
+    } else {
+      setState(() {
+        selectedTool = tool;
+        isWaitingForTextPosition = false;
+      });
+    }
     Navigator.pop(context); // 关闭工具选择器
+  }
+
+  void _showTextInputDialog(
+      BuildContext context, Offset position, Function(String) onSubmit) {
+    TextEditingController textEditingController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Enter Text'),
+          content: TextField(
+            controller: textEditingController,
+            autofocus: true,
+            decoration: InputDecoration(hintText: "Enter your text here"),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+              },
+            ),
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                String enteredText = textEditingController.text;
+                if (enteredText.isNotEmpty) {
+                  onSubmit(enteredText);
+                  Navigator.of(context).pop(); // Close dialog
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showParticipants(BuildContext context) async {

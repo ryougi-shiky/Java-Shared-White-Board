@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'drawing_painter.dart'; // 引入绘画逻辑
-import 'package:android/models/draw_shape.dart';
+import 'drawing_painter.dart'; // Import your custom painter for drawing the shapes
+import 'package:android/models/draw_shape.dart'; // Ensure your model definitions are correct
 
 class Painter extends StatefulWidget {
   final List<DrawingShape> shapes;
@@ -8,12 +8,14 @@ class Painter extends StatefulWidget {
   final String selectedTool; // 新增选中工具的属性
   final double strokeWidth;
   final Function(List<DrawingShape>) onNewShapes;
+  final Function(Offset)?
+      onSelectPosition; // Optional callback for selecting position
 
   Painter({
     Key? key,
     required this.shapes,
     required this.color,
-    required this.selectedTool, // 新增参数
+    required this.selectedTool,
     required this.onNewShapes,
     required this.strokeWidth,
   }) : super(key: key);
@@ -23,8 +25,19 @@ class Painter extends StatefulWidget {
 }
 
 class _PainterState extends State<Painter> {
+  Paint paint = Paint()
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 3.0
+      ..style = PaintingStyle.stroke; // Stroke style for hollow shapes
+
   DrawingShape? currentShape;
 
+  @override
+  void initState() {
+    super.initState();
+    paint.color = widget.color; // 初始化时设置颜色
+  }
+  
   void _startShape(Offset position) {
     Paint paint = Paint()
       ..color = widget.color
@@ -32,7 +45,6 @@ class _PainterState extends State<Painter> {
       ..style = PaintingStyle.stroke; // 设置为stroke绘制空心图形
 
     switch (widget.selectedTool) {
-      // 使用当前选中的工具创建形状
       case 'pen':
         currentShape = DrawingLine([position], paint);
         break;
@@ -45,6 +57,7 @@ class _PainterState extends State<Painter> {
       default:
         break;
     }
+
     if (currentShape != null) {
       widget.onNewShapes([...widget.shapes, currentShape!]);
     }
@@ -60,6 +73,7 @@ class _PainterState extends State<Painter> {
           ((currentShape as DrawingCircle).center - position).distance;
       (currentShape as DrawingCircle).radius = radius;
     }
+
     widget.onNewShapes(List.from(widget.shapes));
   }
 
@@ -77,7 +91,16 @@ class _PainterState extends State<Painter> {
         _updateShape(localPosition);
       },
       onPanEnd: (details) {
-        currentShape = null; // End the current drawing
+        currentShape = null; // Reset the current shape when drawing is finished
+      },
+      onTapDown: (details) {
+        if (widget.onSelectPosition != null) {
+          RenderBox renderBox = context.findRenderObject() as RenderBox;
+          Offset localPosition =
+              renderBox.globalToLocal(details.globalPosition);
+          widget.onSelectPosition!(
+              localPosition); // Use widget's callback if not null
+        }
       },
       child: CustomPaint(
         painter: DrawingPainter(widget.shapes),
