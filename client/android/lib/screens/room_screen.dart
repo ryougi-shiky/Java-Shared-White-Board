@@ -22,6 +22,7 @@ class _RoomScreenState extends State<RoomScreen> {
   List<User> participants = [];
   Color selectedColor = Colors.black;
   String selectedTool = 'pen';
+  double strokeWidth = 3.0;
   List<DrawingShape> shapes = []; // Initialize an empty list of shapes
   bool isWaitingForTextPosition = false;
   Offset? textPosition;

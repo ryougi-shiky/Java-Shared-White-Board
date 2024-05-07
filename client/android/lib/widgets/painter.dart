@@ -8,8 +8,6 @@ class Painter extends StatefulWidget {
   final String selectedTool; // 新增选中工具的属性
   final double strokeWidth;
   final Function(List<DrawingShape>) onNewShapes;
-  final Function(Offset)?
-      onSelectPosition; // Optional callback for selecting position
 
   Painter({
     Key? key,
@@ -26,9 +24,9 @@ class Painter extends StatefulWidget {
 
 class _PainterState extends State<Painter> {
   Paint paint = Paint()
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 3.0
-      ..style = PaintingStyle.stroke; // Stroke style for hollow shapes
+    ..strokeCap = StrokeCap.round
+    ..strokeWidth = 3.0
+    ..style = PaintingStyle.stroke; // Stroke style for hollow shapes
 
   DrawingShape? currentShape;
 
@@ -37,7 +35,7 @@ class _PainterState extends State<Painter> {
     super.initState();
     paint.color = widget.color; // 初始化时设置颜色
   }
-  
+
   void _startShape(Offset position) {
     Paint paint = Paint()
       ..color = widget.color
@@ -93,15 +91,15 @@ class _PainterState extends State<Painter> {
       onPanEnd: (details) {
         currentShape = null; // Reset the current shape when drawing is finished
       },
-      onTapDown: (details) {
-        if (widget.onSelectPosition != null) {
-          RenderBox renderBox = context.findRenderObject() as RenderBox;
-          Offset localPosition =
-              renderBox.globalToLocal(details.globalPosition);
-          widget.onSelectPosition!(
-              localPosition); // Use widget's callback if not null
-        }
-      },
+      // onTapDown: (details) {
+      //   if (widget.onSelectPosition != null) {
+      //     RenderBox renderBox = context.findRenderObject() as RenderBox;
+      //     Offset localPosition =
+      //         renderBox.globalToLocal(details.globalPosition);
+      //     widget.onSelectPosition!(
+      //         localPosition); // Use widget's callback if not null
+      //   }
+      // },
       child: CustomPaint(
         painter: DrawingPainter(widget.shapes),
         child: Container(),
