@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:android/models/room.dart'; // 确保 Room 模型已正确定义
 import 'package:android/models/user.dart'; // 确保 User 模型已正确定义
 import 'package:android/widgets/painter.dart';
+import 'package:android/models/draw_shape.dart';
 
 class RoomScreen extends StatefulWidget {
   final Room room;
@@ -21,12 +22,18 @@ class _RoomScreenState extends State<RoomScreen> {
   List<User> participants = [];
   Color selectedColor = Colors.black;
   String selectedTool = 'pen';
-  List<Offset?> points = [];
+  List<DrawingShape> shapes = []; // Initialize an empty list of shapes
 
   @override
   void initState() {
     super.initState();
     fetchParticipants();
+  }
+
+  void updateShapes(List<DrawingShape> newShapes) {
+    setState(() {
+      shapes = newShapes;
+    });
   }
 
   void fetchParticipants() async {
@@ -81,14 +88,10 @@ class _RoomScreenState extends State<RoomScreen> {
         ],
       ),
       body: Painter(
-        points: points,
+        shapes: shapes, // Pass the shapes list
         color: selectedColor,
-        onNewPoints: (newPoints) {
-          setState(() {
-            points = newPoints;
-            // 这里可以添加发送到服务器的代码，以同步新的画线
-          });
-        },
+        selectedTool: selectedTool, // Pass the selected tool
+        onNewShapes: updateShapes, // Pass the callback to update shapes
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _leaveRoom(context),
@@ -102,23 +105,74 @@ class _RoomScreenState extends State<RoomScreen> {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return Wrap(
+        return Column(
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            ListTile(
-              leading: Icon(Icons.brush),
-              title: Text('Pen'),
-              onTap: () => _selectTool('pen'),
+            Wrap(
+              children: <Widget>[
+                ListTile(
+                  leading: Icon(Icons.brush),
+                  title: Text('Pen'),
+                  onTap: () {
+                    _selectTool('pen');
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.check_box_outline_blank),
+                  title: Text('Rectangle'),
+                  onTap: () {
+                    _selectTool('rectangle');
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.radio_button_unchecked),
+                  title: Text('Circle'),
+                  onTap: () {
+                    _selectTool('circle');
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.text_fields),
+                  title: Text('Text'),
+                  onTap: () {
+                    _selectTool('text');
+                  },
+                ),
+              ],
             ),
-            ListTile(
-              leading: Icon(Icons.check_box_outline_blank),
-              title: Text('Rectangle'),
-              onTap: () => _selectTool('rectangle'),
-            ),
-            // 添加更多工具选项
+            Divider(),
+            // Color picker
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: List.generate(Colors.primaries.length, (index) {
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        selectedColor = Colors.primaries[index];
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.primaries[index],
+                      radius: 15,
+                    ),
+                  );
+                }),
+              ),
+            )
           ],
         );
       },
     );
+  }
+
+  void _selectTool(String tool) {
+    setState(() {
+      selectedTool = tool;
+    });
+    Navigator.pop(context); // 关闭工具选择器
   }
 
   void _showParticipants(BuildContext context) async {
@@ -172,12 +226,5 @@ class _RoomScreenState extends State<RoomScreen> {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Failed to leave room: $e')));
     }
-  }
-
-  void _selectTool(String tool) {
-    setState(() {
-      selectedTool = tool;
-    });
-    Navigator.pop(context); // 关闭工具选择器
   }
 }
