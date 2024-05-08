@@ -6,6 +6,7 @@ import 'package:android/models/room.dart'; // 确保 Room 模型已正确定义
 import 'package:android/models/user.dart'; // 确保 User 模型已正确定义
 import 'package:android/widgets/painter.dart';
 import 'package:android/models/draw_shape.dart';
+import 'package:android/services/websocket_service.dart';
 
 class RoomScreen extends StatefulWidget {
   final Room room;
@@ -26,11 +27,26 @@ class _RoomScreenState extends State<RoomScreen> {
   List<DrawingShape> shapes = []; // Initialize an empty list of shapes
   bool isWaitingForTextPosition = false;
   Offset? textPosition;
+  late WebSocketService wsService;
 
   @override
   void initState() {
     super.initState();
-    fetchParticipants();
+    // Initialize WebSocket connection and setup the drawing update mechanism
+    wsService = WebSocketService(updateDrawingFromServer);
+    wsService.connect(widget.room.id);
+  }
+
+  void updateDrawingFromServer(DrawingShape shape) {
+    setState(() {
+      shapes.add(shape);
+    });
+  }
+
+  @override
+  void dispose() {
+    wsService.disconnect();
+    super.dispose();
   }
 
   void updateShapes(List<DrawingShape> newShapes) {
@@ -108,7 +124,7 @@ class _RoomScreenState extends State<RoomScreen> {
   void _insertTextAtPosition(String text, Offset position) {
     Paint paint = Paint()
       ..color = selectedColor
-      ..strokeWidth = 3.0;
+      ..strokeWidth = strokeWidth;
     DrawingShape newText = DrawingText(text, position, paint);
     updateShapes([...shapes, newText]);
   }

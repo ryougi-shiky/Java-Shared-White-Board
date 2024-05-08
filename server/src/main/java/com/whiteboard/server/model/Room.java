@@ -5,12 +5,16 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
+import java.util.ArrayList;
+
 
 public class Room {
     private String id;
     private User owner;
     private Set<User> participants = new HashSet<>();
     private Map<String, Object> boardData = new ConcurrentHashMap<>();
+    private List<DrawingAction> drawings;
 
     public Room(String id, User owner) {
         this.id = id;
@@ -42,5 +46,13 @@ public class Room {
 
     public Map<String, Object> getBoardData() {
         return new HashMap<>(boardData);
+    }
+
+    public void addDrawing(DrawingAction drawing) {
+        this.drawings.add(drawing);
+    }
+
+    public List<DrawingAction> getDrawings() {
+        return this.drawings;
     }
 }

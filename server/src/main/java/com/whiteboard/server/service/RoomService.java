@@ -2,6 +2,8 @@ package com.whiteboard.server.service;
 
 import com.whiteboard.server.model.User;
 import com.whiteboard.server.model.Room;
+import com.whiteboard.server.model.DrawingAction;
+
 import com.whiteboard.server.response.Error;
 
 import java.util.concurrent.*;
@@ -93,6 +95,18 @@ public class RoomService {
 
     public List<User> getAllUsers() {
         return new ArrayList<>(users.values());
+    }
+
+    public void addDrawing(String roomId, DrawingAction action) {
+        Room room = rooms.get(roomId);
+        if (room != null) {
+            room.addDrawing(action);
+        }
+    }
+
+    public List<DrawingAction> getDrawings(String roomId) {
+        Room room = rooms.get(roomId);
+        return room != null ? room.getDrawings() : new CopyOnWriteArrayList<>();
     }
 }
 
