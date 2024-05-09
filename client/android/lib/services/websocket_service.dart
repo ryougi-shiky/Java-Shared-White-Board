@@ -1,9 +1,10 @@
 import 'package:web_socket_channel/io.dart';
 import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:android/models/draw_action.dart';
 import 'package:android/models/draw_shape.dart';
-import 'package:flutter/material.dart';
 
 class WebSocketService {
   late IOWebSocketChannel channel;
@@ -13,19 +14,37 @@ class WebSocketService {
   WebSocketService(this.onUpdateDrawing);
 
   void connect(String roomId) {
-    channel = IOWebSocketChannel.connect('ws://yourserver.com/room/$roomId');
+    var serverUrl = dotenv.env['SERVER_URL'] ?? "http://defaultserver";
+    // var url =
+    //     Uri.parse('$serverUrl/rooms/getparticipants?roomId=$roomId');
+
+    var authUser = dotenv.env['USER'] ?? "admin";
+    var authPwd = dotenv.env['PASSWORD'] ?? "admin";
+    String basicAuth =
+        'Basic ' + base64Encode(utf8.encode('$authUser:$authPwd'));
+    channel = IOWebSocketChannel.connect('ws://$serverUrl/room/$roomId');
 
     channel.stream.listen((message) {
+      print("flutter ws listening...");
       // Deserialize the incoming message
       var jsonMessage = json.decode(message);
-      DrawingAction action = DrawingAction.fromJson(jsonMessage);
-      updateDrawingFromServer(action);
+      if (jsonMessage is List) {
+        // Handle initial drawing state
+        List<DrawingAction> actions =
+            jsonMessage.map((data) => DrawingAction.fromJson(data)).toList();
+        actions.forEach(updateDrawingFromServer);
+      } else {
+        // Handle individual drawing actions
+        DrawingAction action = DrawingAction.fromJson(jsonMessage);
+        updateDrawingFromServer(action);
+      }
     });
   }
 
   void sendDrawing(DrawingAction action) {
     // Serialize and send the drawing action
     channel.sink.add(json.encode(action.toJson()));
+    print("flutter ws sending drawing...");
   }
 
   void disconnect() {
@@ -68,5 +87,6 @@ class WebSocketService {
 
     // Call the callback to update the UI
     onUpdateDrawing(shape);
+    print("flutter ws updateDrawingFromServer...");
   }
 }

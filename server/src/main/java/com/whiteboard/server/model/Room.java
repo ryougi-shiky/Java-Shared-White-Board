@@ -14,7 +14,7 @@ public class Room {
     private User owner;
     private Set<User> participants = new HashSet<>();
     private Map<String, Object> boardData = new ConcurrentHashMap<>();
-    private List<DrawingAction> drawings;
+    private List<DrawingAction> drawings = new CopyOnWriteArrayList<>();  // 线程安全的列表，适合频繁更新场景
 
     public Room(String id, User owner) {
         this.id = id;
@@ -48,11 +48,11 @@ public class Room {
         return new HashMap<>(boardData);
     }
 
-    public void addDrawing(DrawingAction drawing) {
+    public synchronized void addDrawing(DrawingAction drawing) {
         this.drawings.add(drawing);
     }
 
     public List<DrawingAction> getDrawings() {
-        return this.drawings;
+        return new ArrayList<>(this.drawings);  // 返回一个复制的列表，以保证封装性
     }
 }
