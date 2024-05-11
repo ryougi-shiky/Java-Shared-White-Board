@@ -101,6 +101,9 @@ public class RoomService {
         Room room = rooms.get(roomId);
         if (room != null) {
             room.addDrawing(action);
+            logger.info("Added drawing to room: {}", roomId);
+        } else {
+            logger.error("Room not found: {}", roomId);
         }
     }
 

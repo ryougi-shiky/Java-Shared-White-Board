@@ -6,6 +6,7 @@ import 'package:android/models/room.dart'; // 确保 Room 模型已正确定义
 import 'package:android/models/user.dart'; // 确保 User 模型已正确定义
 import 'package:android/widgets/painter.dart';
 import 'package:android/models/draw_shape.dart';
+import 'package:android/models/draw_action.dart';
 import 'package:android/services/websocket_service.dart';
 
 class RoomScreen extends StatefulWidget {
@@ -32,12 +33,20 @@ class _RoomScreenState extends State<RoomScreen> {
   @override
   void initState() {
     super.initState();
+    fetchParticipants();
     // Initialize WebSocket connection and setup the drawing update mechanism
     wsService = WebSocketService(updateDrawingFromServer);
     wsService.connect(widget.room.id);
   }
 
-  void updateDrawingFromServer(DrawingShape shape) {
+  void updateDrawingFromServer(dynamic jsonMessage) {
+    // Deserialize the incoming message
+    DrawingAction action = DrawingAction.fromJson(json.decode(jsonMessage));
+
+    // Convert the DrawingAction to a DrawingShape
+    DrawingShape shape = action.toDrawingShape();
+
+    // Update the shapes list
     setState(() {
       shapes.add(shape);
     });
@@ -68,7 +77,7 @@ class _RoomScreenState extends State<RoomScreen> {
     try {
       var response = await http.get(
         url,
-        headers: <String, String>{'authorization': basicAuth},
+        headers: {'authorization': basicAuth},
       );
       if (response.statusCode == 200) {
         setState(() {
@@ -165,29 +174,6 @@ class _RoomScreenState extends State<RoomScreen> {
                 ],
               ),
               Divider(),
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(
-              //       horizontal: 20.0, vertical: 10.0),
-              //   child: Row(
-              //     children: <Widget>[
-              //       Text("Stroke Size"),
-              //       Expanded(
-              //         child: Slider(
-              //           value: strokeWidth,
-              //           min: 1.0,
-              //           max: 10.0,
-              //           divisions: 9,
-              //           label: strokeWidth.round().toString(),
-              //           onChanged: (double value) {
-              //             setState(() {
-              //               strokeWidth = value;
-              //             });
-              //           },
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20.0), // 增加垂直间距
                 child: Wrap(

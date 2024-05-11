@@ -14,37 +14,30 @@ class WebSocketService {
   WebSocketService(this.onUpdateDrawing);
 
   void connect(String roomId) {
-    var serverUrl = dotenv.env['SERVER_URL'] ?? "http://defaultserver";
-    // var url =
-    //     Uri.parse('$serverUrl/rooms/getparticipants?roomId=$roomId');
+    dotenv.load(); // 确保.env文件已加载
+    var serverAddress = dotenv.env['SERVER_ADDR'] ?? "74.211.111.168:8088";
+    var url = Uri.parse('ws://$serverAddress/ws/'); // 确保连接到 /ws 端点
+    print("Connecting to WebSocket at $url");
 
-    var authUser = dotenv.env['USER'] ?? "admin";
-    var authPwd = dotenv.env['PASSWORD'] ?? "admin";
-    String basicAuth =
-        'Basic ' + base64Encode(utf8.encode('$authUser:$authPwd'));
-    channel = IOWebSocketChannel.connect('ws://$serverUrl/room/$roomId');
+    channel = IOWebSocketChannel.connect(url);
 
     channel.stream.listen((message) {
-      print("flutter ws listening...");
-      // Deserialize the incoming message
-      var jsonMessage = json.decode(message);
-      if (jsonMessage is List) {
-        // Handle initial drawing state
-        List<DrawingAction> actions =
-            jsonMessage.map((data) => DrawingAction.fromJson(data)).toList();
-        actions.forEach(updateDrawingFromServer);
-      } else {
-        // Handle individual drawing actions
-        DrawingAction action = DrawingAction.fromJson(jsonMessage);
-        updateDrawingFromServer(action);
-      }
+      print("Received message: $message");
+      var decoded = json.decode(message);
+      DrawingAction action = DrawingAction.fromJson(decoded);
+      var shape = action.toDrawingShape();
+      onUpdateDrawing(shape);
     });
+
+    // 订阅房间
+    channel.sink.add(json
+        .encode({'type': 'subscribe', 'destination': '/board/room/$roomId'}));
   }
 
   void sendDrawing(DrawingAction action) {
-    // Serialize and send the drawing action
-    channel.sink.add(json.encode(action.toJson()));
-    print("flutter ws sending drawing...");
+    channel.sink.add(json.encode(
+        {'type': 'send', 'destination': '/app/draw', 'body': action.toJson()}));
+    print("Sending drawing action...");
   }
 
   void disconnect() {

@@ -11,6 +11,7 @@ void main() async {
   // Load the environment variables
   await dotenv.load(fileName: ".env");
   print('Server URL: ${dotenv.env['SERVER_URL']}');
+  print('Server Address: ${dotenv.env['SERVER_ADDR']}');
   runApp(const MyApp());
 }
 

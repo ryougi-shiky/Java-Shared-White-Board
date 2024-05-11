@@ -11,15 +11,19 @@ import org.slf4j.LoggerFactory;
 public class DrawingController {
     private static final Logger logger = LoggerFactory.getLogger(DrawingController.class);
 
+    @Autowired
+    private RoomService roomService;
+
     @MessageMapping("/draw")
     @SendTo("/board/room/{roomId}")
-    public DrawingAction broadcastDrawing(DrawingAction action, org.springframework.messaging.simp.SimpMessageHeaderAccessor headerAccessor) throws Exception {
-        String username = headerAccessor.getUser().getName(); // Assuming username is set as Principal
-        String roomId = headerAccessor.getSessionAttributes().get("roomId").toString(); // Assuming roomId is stored in session attributes
-        logger.info("User: {} joined Room ID: {}", username, roomId);
+    public DrawingAction broadcastDrawing(@DestinationVariable String roomId, DrawingAction action) throws Exception {
+        logger.info("Broadcasting drawing action in room: {}", roomId);
 
-        // 这里可以添加一些逻辑，例如保存画板动作到数据库。
-        return action;  // 将动作转发给订阅了"/board/room/{roomId}"的客户端。
+        // 将绘图动作保存到相应的房间
+        roomService.addDrawing(roomId, action);
+
+        // 将动作转发给订阅了"/board/room/{roomId}"的客户端
+        return action;  
     }
 
 }
