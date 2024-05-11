@@ -6,6 +6,10 @@ import org.springframework.stereotype.Controller;
 import com.whiteboard.server.model.DrawingAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.whiteboard.server.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+
 
 @Controller
 public class DrawingController {

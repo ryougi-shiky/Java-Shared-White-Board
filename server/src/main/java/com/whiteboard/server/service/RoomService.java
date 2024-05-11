@@ -10,9 +10,13 @@ import java.util.concurrent.*;
 import java.util.UUID;
 import java.util.List;
 import java.util.ArrayList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @org.springframework.stereotype.Service
 public class RoomService {
+    private static final Logger logger = LoggerFactory.getLogger(RoomService.class);
+
     private ConcurrentHashMap<String, Room> rooms = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, User> users = new ConcurrentHashMap<>();
 
