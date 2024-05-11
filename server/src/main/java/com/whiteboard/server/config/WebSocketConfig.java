@@ -14,7 +14,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // 注册一个WebSocket端点，客户端将使用它连接到WebSocket服务。
-        registry.addEndpoint("/ws").setAllowedOriginPatterns("*") .withSockJS().setInterceptors(new HttpSessionHandshakeInterceptor());
+        registry.addEndpoint("/ws").setAllowedOriginPatterns("*");
     }
 
     @Override
