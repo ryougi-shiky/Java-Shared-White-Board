@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:math';
+
 import 'package:web_socket_channel/io.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -5,33 +8,49 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:android/models/draw_action.dart';
 import 'package:android/models/draw_shape.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class WebSocketService {
-  late IOWebSocketChannel channel;
+  late WebSocketChannel channel;
   final Function(DrawingShape)
       onUpdateDrawing; // Callback to handle drawing updates
 
   WebSocketService(this.onUpdateDrawing);
 
-  void connect(String roomId) {
-    dotenv.load(); // 确保.env文件已加载
+  Future<void> connect(String roomId) async {
     var serverAddress = dotenv.env['SERVER_ADDR'] ?? "74.211.111.168:8088";
-    var url = Uri.parse('ws://$serverAddress/ws/'); // 确保连接到 /ws 端点
+    var url = Uri.parse('ws://$serverAddress/ws'); // 确保连接到 /ws 端点
     print("Connecting to WebSocket at $url");
 
-    channel = IOWebSocketChannel.connect(url);
+    var authUser = dotenv.env['USER'] ?? "admin";
+    var authPwd = dotenv.env['PASSWORD'] ?? "admin";
+    String basicAuth =
+        'Basic ' + base64Encode(utf8.encode('$authUser:$authPwd'));
 
-    channel.stream.listen((message) {
-      print("Received message: $message");
-      var decoded = json.decode(message);
-      DrawingAction action = DrawingAction.fromJson(decoded);
-      var shape = action.toDrawingShape();
-      onUpdateDrawing(shape);
-    });
+    var headers = {
+      'Authorization': basicAuth,
+    };
 
-    // 订阅房间
-    channel.sink.add(json
-        .encode({'type': 'subscribe', 'destination': '/board/room/$roomId'}));
+    try {
+      channel = IOWebSocketChannel.connect(
+        url,
+        headers: headers,
+      );
+
+      channel.stream.listen((message) {
+        print("Received message: $message");
+        var decoded = json.decode(message);
+        DrawingAction action = DrawingAction.fromJson(decoded);
+        var shape = action.toDrawingShape();
+        onUpdateDrawing(shape);
+      });
+
+      // 订阅房间
+      channel.sink.add(json
+          .encode({'type': 'subscribe', 'destination': '/board/room/$roomId'}));
+    } catch (e) {
+      print('Failed to connect to WebSocket: $e');
+    }
   }
 
   void sendDrawing(DrawingAction action) {
