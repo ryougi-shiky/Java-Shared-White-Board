@@ -16,7 +16,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 // 配置请求授权
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/").permitAll()  // 允许无授权访问"/api/register"
+                        .requestMatchers("/**").permitAll()  // 允许无授权访问"/api/register"
                         .anyRequest().authenticated()  // 其他所有请求需要认证
                 )
                 // 配置 HTTP Basic 认证，适用于简单认证场景
