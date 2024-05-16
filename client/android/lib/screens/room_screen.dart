@@ -62,6 +62,7 @@ class _RoomScreenState extends State<RoomScreen> {
     setState(() {
       shapes = newShapes;
     });
+    print("updating shapes: $shapes");
   }
 
   void fetchParticipants() async {
