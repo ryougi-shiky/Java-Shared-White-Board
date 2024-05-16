@@ -36,39 +36,74 @@ class WebSocketService {
         url,
         headers: headers,
       );
-
-      channel.stream.listen((message) {
-        print("Received message: $message");
-        var decoded = json.decode(message);
-        DrawingAction action = DrawingAction.fromJson(decoded);
-        var shape = action.toDrawingShape();
-        onUpdateDrawing(shape);
-      });
-
-      // 订阅房间
-      channel.sink.add(json
-          .encode({'type': 'subscribe', 'destination': '/board/room/$roomId'}));
     } catch (e) {
-      print('Failed to connect to WebSocket: $e');
+      print('Failed to establish WebSocket connection: $e');
+    }
+
+    try {
+      channel.stream.listen(
+        (message) {
+          try {
+            print("Received message: $message");
+            var decoded = json.decode(message);
+            if (decoded['type'] == 'welcome') {
+              print("Welcome message received: ${decoded['message']}");
+            } else {
+              DrawingAction action = DrawingAction.fromJson(decoded);
+              var shape = action.toDrawingShape();
+              onUpdateDrawing(shape);
+            }
+          } catch (e) {
+            print('Error processing received message: $e');
+          }
+        },
+        onError: (error) {
+          print('WebSocket error: $error');
+        },
+        onDone: () {
+          print('WebSocket closed');
+        },
+      );
+    } catch (e) {
+      print('Failed to listen to WebSocket stream: $e');
+    }
+
+    try {
+      var subscribeMessage = json
+          .encode({'type': 'subscribe', 'destination': '/board/room/$roomId'});
+      channel.sink.add(subscribeMessage);
+      print("Subscription message sent: $subscribeMessage");
+    } catch (e) {
+      print('Failed to send subscription message: $e');
     }
   }
 
   void sendDrawing(DrawingAction action, String roomId) {
-    if (channel != null && channel.sink != null) {
-      channel.sink.add(json.encode({
-        'type': 'send',
-        'destination': '/app/draw',
-        'roomId': roomId, // Replace with the actual room ID
-        'body': action.toJson()
-      }));
-      print("Sending drawing action: ${action.toJson()}");
-    } else {
-      print("WebSocket channel is not connected.");
+    try {
+      if (channel != null && channel.sink != null) {
+        var message = json.encode({
+          'type': 'send',
+          'destination': '/app/draw',
+          'roomId': roomId, // Replace with the actual room ID
+          'body': action.toJson()
+        });
+        channel.sink.add(message);
+        print("Sending drawing action: $message");
+      } else {
+        print("WebSocket channel is not connected.");
+      }
+    } catch (e) {
+      print('Failed to send drawing action: $e');
     }
   }
 
   void disconnect() {
-    channel.sink.close();
+    try {
+      channel.sink.close();
+      print("WebSocket connection closed");
+    } catch (e) {
+      print('Failed to close WebSocket connection: $e');
+    }
   }
 
   void updateDrawingFromServer(DrawingAction action) {
