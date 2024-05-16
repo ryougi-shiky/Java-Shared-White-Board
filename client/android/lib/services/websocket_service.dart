@@ -14,13 +14,27 @@ import 'package:android/models/draw_shape.dart';
 
 class WebSocketService {
   late StompClient stompClient;
+  var url;
+  var headers;
+
   final Function(DrawingShape)
       onUpdateDrawing; // Callback to handle drawing updates
 
-  WebSocketService(this.onUpdateDrawing){
+  WebSocketService(this.onUpdateDrawing) {
+    var serverAddress = dotenv.env['SERVER_ADDR'] ?? "74.211.111.168:8088";
+    url = 'ws://$serverAddress/ws'; // 确保连接到 /ws 端点
+    var authUser = dotenv.env['USER'] ?? "admin";
+    var authPwd = dotenv.env['PASSWORD'] ?? "admin";
+    String basicAuth =
+        'Basic ' + base64Encode(utf8.encode('$authUser:$authPwd'));
+
+    headers = {
+      'Authorization': basicAuth,
+    };
+
     stompClient = StompClient(
-      config: StompConfig.SockJS(
-        url: '',
+      config: StompConfig(
+        url: url,
         onConnect: (StompFrame frame) {
           // 默认的 onConnect 实现
         },
@@ -29,21 +43,10 @@ class WebSocketService {
   }
 
   Future<void> connect(String roomId) async {
-    var serverAddress = dotenv.env['SERVER_ADDR'] ?? "74.211.111.168:8088";
-    var url = 'ws://$serverAddress/ws'; // 确保连接到 /ws 端点
     print("Connecting to WebSocket at $url");
 
-    var authUser = dotenv.env['USER'] ?? "admin";
-    var authPwd = dotenv.env['PASSWORD'] ?? "admin";
-    String basicAuth =
-        'Basic ' + base64Encode(utf8.encode('$authUser:$authPwd'));
-
-    var headers = {
-      'Authorization': basicAuth,
-    };
-
     stompClient = StompClient(
-      config: StompConfig.SockJS(
+      config: StompConfig(
         url: url,
         stompConnectHeaders: headers,
         webSocketConnectHeaders: headers,
@@ -71,8 +74,6 @@ class WebSocketService {
               }
             },
           );
-
-          
         },
         onWebSocketError: (dynamic error) => print('WebSocket error: $error'),
         onStompError: (StompFrame frame) => print('STOMP error: ${frame.body}'),
