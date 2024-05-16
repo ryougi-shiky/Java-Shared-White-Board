@@ -2,24 +2,35 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:web_socket_channel/io.dart';
+import 'package:stomp_dart_client/stomp.dart';
+import 'package:stomp_dart_client/stomp_config.dart';
+import 'package:stomp_dart_client/stomp_frame.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:android/models/draw_action.dart';
 import 'package:android/models/draw_shape.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 class WebSocketService {
-  late WebSocketChannel channel;
+  late StompClient stompClient;
   final Function(DrawingShape)
       onUpdateDrawing; // Callback to handle drawing updates
 
-  WebSocketService(this.onUpdateDrawing);
+  WebSocketService(this.onUpdateDrawing){
+    stompClient = StompClient(
+      config: StompConfig.SockJS(
+        url: '',
+        onConnect: (StompFrame frame) {
+          // 默认的 onConnect 实现
+        },
+      ),
+    );
+  }
 
   Future<void> connect(String roomId) async {
     var serverAddress = dotenv.env['SERVER_ADDR'] ?? "74.211.111.168:8088";
-    var url = Uri.parse('ws://$serverAddress/ws'); // 确保连接到 /ws 端点
+    var url = 'ws://$serverAddress/ws'; // 确保连接到 /ws 端点
     print("Connecting to WebSocket at $url");
 
     var authUser = dotenv.env['USER'] ?? "admin";
@@ -31,79 +42,69 @@ class WebSocketService {
       'Authorization': basicAuth,
     };
 
-    try {
-      channel = IOWebSocketChannel.connect(
-        url,
-        headers: headers,
-      );
-    } catch (e) {
-      print('Failed to establish WebSocket connection: $e');
-    }
+    stompClient = StompClient(
+      config: StompConfig.SockJS(
+        url: url,
+        stompConnectHeaders: headers,
+        webSocketConnectHeaders: headers,
+        onConnect: (StompFrame frame) {
+          print('Connected to WebSocket');
+          // 订阅欢迎消息
+          stompClient.subscribe(
+            destination: '/app/welcome',
+            callback: (StompFrame frame) {
+              if (frame.body != null) {
+                print("Welcome message received: ${frame.body}");
+              }
+            },
+          );
 
-    try {
-      channel.stream.listen(
-        (message) {
-          try {
-            print("Received message: $message");
-            var decoded = json.decode(message);
-            if (decoded['type'] == 'welcome') {
-              print("Welcome message received: ${decoded['message']}");
-            } else {
-              DrawingAction action = DrawingAction.fromJson(decoded);
-              var shape = action.toDrawingShape();
-              onUpdateDrawing(shape);
-            }
-          } catch (e) {
-            print('Error processing received message: $e');
-          }
-        },
-        onError: (error) {
-          print('WebSocket error: $error');
-        },
-        onDone: () {
-          print('WebSocket closed');
-        },
-      );
-    } catch (e) {
-      print('Failed to listen to WebSocket stream: $e');
-    }
+          stompClient.subscribe(
+            destination: '/board/room/$roomId',
+            callback: (StompFrame frame) {
+              if (frame.body != null) {
+                print("Received message: ${frame.body}");
+                var decoded = json.decode(frame.body!);
+                DrawingAction action = DrawingAction.fromJson(decoded);
+                var shape = action.toDrawingShape();
+                onUpdateDrawing(shape);
+              }
+            },
+          );
 
-    try {
-      var subscribeMessage = json
-          .encode({'type': 'subscribe', 'destination': '/board/room/$roomId'});
-      channel.sink.add(subscribeMessage);
-      print("Subscription message sent: $subscribeMessage");
-    } catch (e) {
-      print('Failed to send subscription message: $e');
-    }
+          
+        },
+        onWebSocketError: (dynamic error) => print('WebSocket error: $error'),
+        onStompError: (StompFrame frame) => print('STOMP error: ${frame.body}'),
+        onDisconnect: (StompFrame frame) =>
+            print('Disconnected from WebSocket'),
+      ),
+    );
+
+    stompClient.activate();
   }
 
   void sendDrawing(DrawingAction action, String roomId) {
-    try {
-      if (channel != null && channel.sink != null) {
-        var message = json.encode({
-          'type': 'send',
-          'destination': '/app/draw',
-          'roomId': roomId, // Replace with the actual room ID
-          'body': action.toJson()
-        });
-        channel.sink.add(message);
-        print("Sending drawing action: $message");
-      } else {
-        print("WebSocket channel is not connected.");
-      }
-    } catch (e) {
-      print('Failed to send drawing action: $e');
+    if (stompClient.connected) {
+      var message = json.encode({
+        'type': 'send',
+        'destination': '/app/draw',
+        'roomId': roomId,
+        'body': action.toJson()
+      });
+      stompClient.send(
+        destination: '/app/draw',
+        body: message,
+      );
+      print("Sending drawing action: $message");
+    } else {
+      print("WebSocket is not connected.");
     }
   }
 
   void disconnect() {
-    try {
-      channel.sink.close();
-      print("WebSocket connection closed");
-    } catch (e) {
-      print('Failed to close WebSocket connection: $e');
-    }
+    stompClient.deactivate();
+    print("WebSocket connection closed");
   }
 
   void updateDrawingFromServer(DrawingAction action) {
