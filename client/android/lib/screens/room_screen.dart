@@ -121,6 +121,9 @@ class _RoomScreenState extends State<RoomScreen> {
         selectedTool: selectedTool, // Pass the selected tool
         onNewShapes: updateShapes, // Pass the callback to update shapes
         strokeWidth: strokeWidth,
+        onDrawUpdate: (DrawingAction action) {
+          wsService.sendDrawing(action, widget.room.id); // 持续发送绘图数据
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _leaveRoom(context),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'drawing_painter.dart'; // Import your custom painter for drawing the shapes
 import 'package:android/models/draw_shape.dart'; // Ensure your model definitions are correct
+import 'package:android/models/draw_action.dart';
 
 class Painter extends StatefulWidget {
   final List<DrawingShape> shapes;
@@ -8,6 +9,7 @@ class Painter extends StatefulWidget {
   final String selectedTool; // 新增选中工具的属性
   final double strokeWidth;
   final Function(List<DrawingShape>) onNewShapes;
+  final Function(DrawingAction) onDrawUpdate;
 
   Painter({
     Key? key,
@@ -16,6 +18,7 @@ class Painter extends StatefulWidget {
     required this.selectedTool,
     required this.onNewShapes,
     required this.strokeWidth,
+    required this.onDrawUpdate,
   }) : super(key: key);
 
   @override
@@ -29,6 +32,7 @@ class _PainterState extends State<Painter> {
     ..style = PaintingStyle.stroke; // Stroke style for hollow shapes
 
   DrawingShape? currentShape;
+  Offset startPoint = Offset.zero;
 
   @override
   void initState() {
@@ -37,6 +41,7 @@ class _PainterState extends State<Painter> {
   }
 
   void _startShape(Offset position) {
+    startPoint = position;
     Paint paint = Paint()
       ..color = widget.color
       ..strokeWidth = widget.strokeWidth
@@ -73,6 +78,19 @@ class _PainterState extends State<Painter> {
     }
 
     widget.onNewShapes(List.from(widget.shapes));
+
+    if (currentShape != null) {
+      DrawingAction action = DrawingAction(
+        type: widget.selectedTool,
+        startX: startPoint.dx,
+        startY: startPoint.dy,
+        endX: position.dx,
+        endY: position.dy,
+        color: widget.color.value.toRadixString(16),
+        strokeWidth: widget.strokeWidth,
+      );
+      widget.onDrawUpdate(action); // 持续更新绘图数据
+    }
   }
 
   @override

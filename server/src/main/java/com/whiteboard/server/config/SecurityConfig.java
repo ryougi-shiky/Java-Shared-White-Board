@@ -24,4 +24,16 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+    // @Bean
+    // public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    //     http
+    //         .authorizeRequests()
+    //             .requestMatchers("/ws/**").permitAll()
+    //             .anyRequest().authenticated()
+    //         .and()
+    //         .csrf().disable();
+
+    //     return http.build();
+    // }
 }

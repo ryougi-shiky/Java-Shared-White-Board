@@ -53,10 +53,18 @@ class WebSocketService {
     }
   }
 
-  void sendDrawing(DrawingAction action) {
-    channel.sink.add(json.encode(
-        {'type': 'send', 'destination': '/app/draw', 'body': action.toJson()}));
-    print("Sending drawing action...");
+  void sendDrawing(DrawingAction action, String roomId) {
+    if (channel != null && channel.sink != null) {
+      channel.sink.add(json.encode({
+        'type': 'send',
+        'destination': '/app/draw',
+        'roomId': roomId, // Replace with the actual room ID
+        'body': action.toJson()
+      }));
+      print("Sending drawing action: ${action.toJson()}");
+    } else {
+      print("WebSocket channel is not connected.");
+    }
   }
 
   void disconnect() {
