@@ -87,19 +87,14 @@ class WebSocketService {
 
   void sendDrawing(DrawingAction action, String roomId) {
     if (stompClient.connected) {
-      var message = json.encode({
-        'type': 'send',
-        'destination': '/app/draw',
-        'roomId': roomId,
-        'body': action.toJson()
-      });
+      var message = json.encode(action.toJson());
       stompClient.send(
-        destination: '/app/draw',
+        destination: '/app/draw/$roomId', // 确保路径包含 roomId
         body: message,
       );
       print("Sending drawing action: $message");
     } else {
-      print("WebSocket is not connected.");
+      print("WebSocket is not connected. Sending drawing failed");
     }
   }
 

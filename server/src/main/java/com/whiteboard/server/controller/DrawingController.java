@@ -18,16 +18,17 @@ public class DrawingController {
     @Autowired
     private RoomService roomService;
 
-    @MessageMapping("/draw")
+    @MessageMapping("/draw/{roomId}")
     @SendTo("/board/room/{roomId}")
     public DrawingAction broadcastDrawing(@DestinationVariable String roomId, DrawingAction action) throws Exception {
         logger.info("Broadcasting drawing action in room: {}", roomId);
         logger.info("Action details: {}", action);
+
         // 将绘图动作保存到相应的房间
         roomService.addDrawing(roomId, action);
         logger.info("Action saved: {}", action);
-        // 将动作转发给订阅了"/board/room/{roomId}"的客户端
-        return action;  
-    }
 
+        // 将动作转发给订阅了 "/board/room/{roomId}" 的客户端
+        return action;
+    }
 }
