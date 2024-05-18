@@ -36,12 +36,12 @@ class DrawingAction {
 
   factory DrawingAction.fromJson(Map<String, dynamic> json) {
     return DrawingAction(
-      type: json['type'],
+      type: json['type'] as String,
       startX: json['startX'].toDouble(),
       startY: json['startY'].toDouble(),
       endX: json['endX'].toDouble(),
       endY: json['endY'].toDouble(),
-      color: json['color'],
+      color: json['color'] as String,
       strokeWidth: json['strokeWidth'].toDouble(),
     );
   }
@@ -52,6 +52,9 @@ class DrawingAction {
           0xFF000000) // Ensures opacity byte is added
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke;
+
+    print(
+        'Converting action to shape: type=$type, startX=$startX, startY=$startY, endX=$endX, endY=$endY');
 
     switch (type) {
       case 'line':

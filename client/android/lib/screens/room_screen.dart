@@ -23,7 +23,7 @@ class RoomScreen extends StatefulWidget {
 class _RoomScreenState extends State<RoomScreen> {
   List<User> participants = [];
   Color selectedColor = Colors.black;
-  String selectedTool = 'pen';
+  String selectedTool = 'line';
   double strokeWidth = 3.0;
   List<DrawingShape> shapes = []; // Initialize an empty list of shapes
   bool isWaitingForTextPosition = false;
@@ -39,17 +39,11 @@ class _RoomScreenState extends State<RoomScreen> {
     wsService.connect(widget.room.id);
   }
 
-  void updateDrawingFromServer(dynamic jsonMessage) {
-    // Deserialize the incoming message
-    DrawingAction action = DrawingAction.fromJson(json.decode(jsonMessage));
-
-    // Convert the DrawingAction to a DrawingShape
-    DrawingShape shape = action.toDrawingShape();
-
-    // Update the shapes list
+  void updateDrawingFromServer(DrawingShape shape) {
     setState(() {
       shapes.add(shape);
     });
+    print("Received shapes from server: $shapes");
   }
 
   @override
@@ -158,7 +152,7 @@ class _RoomScreenState extends State<RoomScreen> {
                     leading: Icon(Icons.brush),
                     title: Text('Pen'),
                     onTap: () {
-                      _selectTool('pen');
+                      _selectTool('line');
                     },
                   ),
                   ListTile(

@@ -69,8 +69,12 @@ class WebSocketService {
                 print("Received message: ${frame.body}");
                 var decoded = json.decode(frame.body!);
                 DrawingAction action = DrawingAction.fromJson(decoded);
-                var shape = action.toDrawingShape();
-                onUpdateDrawing(shape);
+                try {
+                  var shape = action.toDrawingShape();
+                  onUpdateDrawing(shape);
+                } catch (e) {
+                  print('Error converting to drawing shape: $e');
+                }
               }
             },
           );
@@ -103,42 +107,54 @@ class WebSocketService {
     print("WebSocket connection closed");
   }
 
-  void updateDrawingFromServer(DrawingAction action) {
-    // Convert the DrawingAction to a DrawingShape
-    DrawingShape shape;
-    Paint paint = Paint()
-      ..color = Color(int.parse(action.color, radix: 16))
-      ..strokeWidth = action.strokeWidth
-      ..style = PaintingStyle.stroke;
+  // void updateDrawingFromServer(DrawingAction action) {
+  //   // Convert the DrawingAction to a DrawingShape
+  //   DrawingShape shape;
+  //   Paint paint = Paint()
+  //     ..color = Color(int.parse(action.color, radix: 16))
+  //     ..strokeWidth = action.strokeWidth
+  //     ..style = PaintingStyle.stroke;
 
-    switch (action.type) {
-      case 'line':
-        shape = DrawingLine([
-          Offset(action.startX, action.startY),
-          Offset(action.endX, action.endY)
-        ], paint);
-        break;
-      case 'rectangle':
-        shape = DrawingRectangle(Offset(action.startX, action.startY),
-            Offset(action.endX, action.endY), paint);
-        break;
-      case 'circle':
-        double radius = ((Offset(action.startX, action.startY) -
-                    Offset(action.endX, action.endY))
-                .distance /
-            2);
-        shape = DrawingCircle(
-            Offset((action.startX + action.endX) / 2,
-                (action.startY + action.endY) / 2),
-            radius,
-            paint);
-        break;
-      default:
-        shape = DrawingLine([], paint); // Default or unsupported type
-    }
+  //   switch (action.type) {
+  //     case 'line':
+  //       shape = DrawingLine([
+  //         Offset(action.startX, action.startY),
+  //         Offset(action.endX, action.endY)
+  //       ], paint);
+  //       break;
+  //     case 'rectangle':
+  //       shape = DrawingRectangle(Offset(action.startX, action.startY),
+  //           Offset(action.endX, action.endY), paint);
+  //       break;
+  //     case 'circle':
+  //       double radius = ((Offset(action.startX, action.startY) -
+  //                   Offset(action.endX, action.endY))
+  //               .distance /
+  //           2);
+  //       shape = DrawingCircle(
+  //           Offset((action.startX + action.endX) / 2,
+  //               (action.startY + action.endY) / 2),
+  //           radius,
+  //           paint);
+  //       break;
+  //     default:
+  //       shape = DrawingLine([], paint); // Default or unsupported type
+  //   }
+
+  //   // Call the callback to update the UI
+  //   onUpdateDrawing(shape);
+  //   print("flutter ws updateDrawingFromServer...");
+  // }
+
+  void updateDrawingFromServer(dynamic jsonMessage) {
+    // Deserialize the incoming message
+    DrawingAction action = DrawingAction.fromJson(json.decode(jsonMessage));
+
+    // Convert the DrawingAction to a DrawingShape
+    DrawingShape shape = action.toDrawingShape();
 
     // Call the callback to update the UI
     onUpdateDrawing(shape);
-    print("flutter ws updateDrawingFromServer...");
+    print("flutter ws updateDrawingFromServer: $shape");
   }
 }

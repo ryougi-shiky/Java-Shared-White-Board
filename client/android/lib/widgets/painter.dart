@@ -48,7 +48,7 @@ class _PainterState extends State<Painter> {
       ..style = PaintingStyle.stroke; // 设置为stroke绘制空心图形
 
     switch (widget.selectedTool) {
-      case 'pen':
+      case 'line':
         currentShape = DrawingLine([position], paint);
         break;
       case 'rectangle':
