@@ -66,7 +66,7 @@ public class RoomController {
         }
     }
 
-    @PostMapping("/rooms/join/sync")
+    @GetMapping("/rooms/join/sync")
     public ResponseEntity<List<DrawingAction>> syncRoomData(@RequestParam String roomId) {
         try {
             logger.info("Syncing room data for roomId: {}", roomId);
