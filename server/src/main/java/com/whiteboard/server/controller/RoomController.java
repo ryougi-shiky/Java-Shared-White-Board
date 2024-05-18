@@ -2,6 +2,8 @@ package com.whiteboard.server.controller;
 
 import com.whiteboard.server.model.Room;
 import com.whiteboard.server.model.User;
+import com.whiteboard.server.model.DrawingAction;
+
 import com.whiteboard.server.response.Error;
 import com.whiteboard.server.service.RoomService;
 import org.slf4j.Logger;
@@ -61,6 +63,18 @@ public class RoomController {
             logger.error("Join room failed for username: {} in room: {}. Error: {}", username, roomId, result.getMessage());
             logger.info("Current users: '{}'", roomService.getAllUsers());
             return ResponseEntity.badRequest().body(result);
+        }
+    }
+
+    @PostMapping("/rooms/join/sync")
+    public ResponseEntity<List<DrawingAction>> syncRoomData(@RequestParam String roomId) {
+        try {
+            logger.info("Syncing room data for roomId: {}", roomId);
+            List<DrawingAction> drawings = roomService.getDrawings(roomId);
+            return ResponseEntity.ok(drawings);
+        } catch (Exception e) {
+            logger.error("Failed to sync room data for roomId: {}. Error: {}", roomId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

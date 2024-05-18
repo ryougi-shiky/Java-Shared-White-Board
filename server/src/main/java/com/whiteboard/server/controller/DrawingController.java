@@ -31,4 +31,16 @@ public class DrawingController {
         // 将动作转发给订阅了 "/board/room/{roomId}" 的客户端
         return action;
     }
+
+    @MessageMapping("/finalizeDraw/{roomId}")
+    @SendTo("/board/room/{roomId}")
+    public DrawingAction finalizeDrawing(@DestinationVariable String roomId, DrawingAction action) throws Exception {
+        logger.info("Finalizing drawing action in room: {}", roomId);
+        logger.info("Final action details: {}", action);
+        // 将绘图动作保存到相应的房间
+        roomService.addDrawing(roomId, action);
+        logger.info("Final action saved: {}", action);
+        // 将动作转发给订阅了"/board/room/{roomId}"的客户端
+        return action;  
+    }
 }

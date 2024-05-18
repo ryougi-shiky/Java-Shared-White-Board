@@ -34,6 +34,7 @@ class _RoomScreenState extends State<RoomScreen> {
   void initState() {
     super.initState();
     fetchParticipants();
+    syncRoomData(widget.room.id);
     // Initialize WebSocket connection and setup the drawing update mechanism
     wsService = WebSocketService(updateDrawingFromServer);
     wsService.connect(widget.room.id);
@@ -94,6 +95,42 @@ class _RoomScreenState extends State<RoomScreen> {
     }
   }
 
+  void syncRoomData(String roomId) async {
+    var serverUrl = dotenv.env['SERVER_URL'] ?? "http://defaultserver";
+    var url = Uri.parse('$serverUrl/rooms/join/sync?roomId=$roomId');
+
+    var authUser = dotenv.env['USER'] ?? "admin";
+    var authPwd = dotenv.env['PASSWORD'] ?? "admin";
+    String basicAuth =
+        'Basic ' + base64Encode(utf8.encode('$authUser:$authPwd'));
+
+    try {
+      var response = await http.get(
+        url,
+        headers: {'authorization': basicAuth},
+      );
+      if (response.statusCode == 200) {
+        List<DrawingAction> actions = (jsonDecode(response.body) as List)
+            .map((data) => DrawingAction.fromJson(data))
+            .toList();
+        for (var action in actions) {
+          var shape = action.toDrawingShape();
+          setState(() {
+            shapes.add(shape);
+          });
+        }
+        print('Successfully synced room data');
+      } else {
+        print(
+            'Failed to sync room data with status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to sync room data: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,13 +148,16 @@ class _RoomScreenState extends State<RoomScreen> {
         ],
       ),
       body: Painter(
-        shapes: shapes, // Pass the shapes list
+        shapes: shapes,
         color: selectedColor,
-        selectedTool: selectedTool, // Pass the selected tool
-        onNewShapes: updateShapes, // Pass the callback to update shapes
+        selectedTool: selectedTool,
+        onNewShapes: updateShapes,
         strokeWidth: strokeWidth,
         onDrawUpdate: (DrawingAction action) {
-          wsService.sendDrawing(action, widget.room.id); // 持续发送绘图数据
+          wsService.sendDrawing(action, widget.room.id);
+        },
+        onDrawEnd: (DrawingAction action) {
+          wsService.finalizeDrawing(action, widget.room.id);
         },
       ),
       floatingActionButton: FloatingActionButton(

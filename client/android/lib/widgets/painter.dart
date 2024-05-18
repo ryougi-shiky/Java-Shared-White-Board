@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'drawing_painter.dart'; // Import your custom painter for drawing the shapes
-import 'package:android/models/draw_shape.dart'; // Ensure your model definitions are correct
+import 'drawing_painter.dart';
+import 'package:android/models/draw_shape.dart';
 import 'package:android/models/draw_action.dart';
 
 class Painter extends StatefulWidget {
   final List<DrawingShape> shapes;
   final Color color;
-  final String selectedTool; // 新增选中工具的属性
+  final String selectedTool;
   final double strokeWidth;
   final Function(List<DrawingShape>) onNewShapes;
   final Function(DrawingAction) onDrawUpdate;
+  final Function(DrawingAction) onDrawEnd;
 
   Painter({
     Key? key,
@@ -19,6 +20,7 @@ class Painter extends StatefulWidget {
     required this.onNewShapes,
     required this.strokeWidth,
     required this.onDrawUpdate,
+    required this.onDrawEnd,
   }) : super(key: key);
 
   @override
@@ -29,15 +31,16 @@ class _PainterState extends State<Painter> {
   Paint paint = Paint()
     ..strokeCap = StrokeCap.round
     ..strokeWidth = 3.0
-    ..style = PaintingStyle.stroke; // Stroke style for hollow shapes
+    ..style = PaintingStyle.stroke;
 
   DrawingShape? currentShape;
   Offset startPoint = Offset.zero;
+  DrawingAction? currentAction;
 
   @override
   void initState() {
     super.initState();
-    paint.color = widget.color; // 初始化时设置颜色
+    paint.color = widget.color;
   }
 
   void _startShape(Offset position) {
@@ -45,7 +48,7 @@ class _PainterState extends State<Painter> {
     Paint paint = Paint()
       ..color = widget.color
       ..strokeWidth = widget.strokeWidth
-      ..style = PaintingStyle.stroke; // 设置为stroke绘制空心图形
+      ..style = PaintingStyle.stroke;
 
     switch (widget.selectedTool) {
       case 'line':
@@ -63,6 +66,15 @@ class _PainterState extends State<Painter> {
 
     if (currentShape != null) {
       widget.onNewShapes([...widget.shapes, currentShape!]);
+      currentAction = DrawingAction(
+        type: widget.selectedTool,
+        startX: startPoint.dx,
+        startY: startPoint.dy,
+        endX: startPoint.dx,
+        endY: startPoint.dy,
+        color: widget.color.value.toRadixString(16),
+        strokeWidth: widget.strokeWidth,
+      );
     }
   }
 
@@ -79,18 +91,20 @@ class _PainterState extends State<Painter> {
 
     widget.onNewShapes(List.from(widget.shapes));
 
-    if (currentShape != null) {
-      DrawingAction action = DrawingAction(
-        type: widget.selectedTool,
-        startX: startPoint.dx,
-        startY: startPoint.dy,
-        endX: position.dx,
-        endY: position.dy,
-        color: widget.color.value.toRadixString(16),
-        strokeWidth: widget.strokeWidth,
-      );
-      widget.onDrawUpdate(action); // 持续更新绘图数据
+    if (currentAction != null) {
+      currentAction!.endX = position.dx;
+      currentAction!.endY = position.dy;
+      widget.onDrawUpdate(
+          currentAction!); // Continuously update the drawing action
     }
+  }
+
+  void _endShape() {
+    if (currentAction != null) {
+      widget.onDrawEnd(currentAction!); // Finalize the drawing action
+      currentAction = null;
+    }
+    currentShape = null; // Reset the current shape when drawing is finished
   }
 
   @override
@@ -107,31 +121,12 @@ class _PainterState extends State<Painter> {
         _updateShape(localPosition);
       },
       onPanEnd: (details) {
-        currentShape = null; // Reset the current shape when drawing is finished
+        _endShape();
       },
-      // onTapDown: (details) {
-      //   if (widget.onSelectPosition != null) {
-      //     RenderBox renderBox = context.findRenderObject() as RenderBox;
-      //     Offset localPosition =
-      //         renderBox.globalToLocal(details.globalPosition);
-      //     widget.onSelectPosition!(
-      //         localPosition); // Use widget's callback if not null
-      //   }
-      // },
       child: CustomPaint(
         painter: DrawingPainter(widget.shapes),
         child: Container(),
       ),
     );
-  }
-
-  void _handleDrawing(DragUpdateDetails details) {
-    RenderBox renderBox = context.findRenderObject() as RenderBox;
-    Offset localPosition = renderBox.globalToLocal(details.globalPosition);
-    _updateShape(localPosition);
-  }
-
-  void _finishDrawing() {
-    setState(() => currentShape = null);
   }
 }

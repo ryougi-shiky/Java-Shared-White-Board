@@ -89,6 +89,19 @@ class WebSocketService {
     stompClient.activate();
   }
 
+  void finalizeDrawing(DrawingAction action, String roomId) {
+    if (stompClient.connected) {
+      var message = json.encode(action.toJson());
+      stompClient.send(
+        destination: '/app/finalizeDraw/$roomId', // 确保路径包含 roomId
+        body: message,
+      );
+      print("Finalizing drawing action: $message");
+    } else {
+      print("WebSocket is not connected. Finalizing drawing failed");
+    }
+  }
+
   void sendDrawing(DrawingAction action, String roomId) {
     if (stompClient.connected) {
       var message = json.encode(action.toJson());
